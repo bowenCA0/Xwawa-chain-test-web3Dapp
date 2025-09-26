@@ -1,0 +1,834 @@
+/* 抽奖系统样式 */
+
+/* 艺术图展示区域样式 */
+.lottery-art-section {
+    padding: 40px 0;
+    background: linear-gradient(135deg, rgba(76, 217, 100, 0.03) 0%, rgba(76, 217, 100, 0.01) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.lottery-art-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(76, 217, 100, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 50%, rgba(76, 217, 100, 0.06) 0%, transparent 40%);
+    pointer-events: none;
+}
+
+.art-banner {
+    position: relative;
+    z-index: 1;
+}
+
+.art-image-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+    border: 2px solid rgba(76, 217, 100, 0.2);
+    transition: all 0.3s ease;
+}
+
+.art-image-container:hover {
+    border-color: rgba(76, 217, 100, 0.4);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+.art-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: var(--primary-color);
+    text-align: center;
+    padding: 40px;
+    background: 
+        linear-gradient(45deg, transparent 25%, rgba(76, 217, 100, 0.02) 25%, rgba(76, 217, 100, 0.02) 50%, transparent 50%, transparent 75%, rgba(76, 217, 100, 0.02) 75%),
+        linear-gradient(-45deg, transparent 25%, rgba(76, 217, 100, 0.02) 25%, rgba(76, 217, 100, 0.02) 50%, transparent 50%, transparent 75%, rgba(76, 217, 100, 0.02) 75%);
+    background-size: 20px 20px;
+    position: relative;
+}
+
+.art-placeholder::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    border: 2px dashed rgba(76, 217, 100, 0.3);
+    border-radius: 12px;
+    pointer-events: none;
+}
+
+.art-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+    color: var(--primary-color);
+}
+
+.art-placeholder p {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+.dimensions-hint {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.lottery-main-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.lottery-hero {
+    background-color: #1a1a1a;
+    padding: 60px 0;
+    text-align: center;
+    border-radius: 12px;
+    margin: 20px auto;
+    max-width: 1200px;
+}
+
+.lottery-title {
+    color: #b0b0b0;
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.lottery-subtitle {
+    color: #888888;
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.lottery-section {
+    padding: 40px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 钱包连接样式 */
+.wallet-connection {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 20px;
+}
+
+#wallet-status {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+#wallet-status.not-connected {
+    background-color: #ff6b6b;
+    color: white;
+}
+
+#wallet-status.connected {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.connect-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.connect-button:hover {
+    background-color: #45a049;
+}
+
+/* Web3风格抽奖转盘样式 */
+.lottery-wheel-container {
+    display: flex;
+    justify-content: center;
+    margin: 60px 0;
+    position: relative;
+}
+
+.lottery-wheel-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        #4cd964 0deg,
+        #00d4ff 60deg,
+        #ff9500 120deg,
+        #ff3b30 180deg,
+        #af52de 240deg,
+        #007aff 300deg,
+        #4cd964 360deg
+    );
+    animation: rotate-glow 8s linear infinite;
+    z-index: -1;
+    filter: blur(8px);
+    opacity: 0.6;
+}
+
+@keyframes rotate-glow {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.lottery-wheel {
+    position: relative;
+    width: 420px;
+    height: 420px;
+    filter: drop-shadow(0 0 30px rgba(76, 217, 100, 0.3));
+}
+
+.wheel-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    position: relative;
+    overflow: hidden;
+    border: 4px solid transparent;
+    background-clip: padding-box;
+    transition: transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.wheel-inner::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+    background: conic-gradient(
+        from 0deg,
+        #4cd964,
+        #00d4ff,
+        #ff9500,
+        #ff3b30,
+        #af52de,
+        #007aff,
+        #4cd964
+    );
+    z-index: -1;
+    animation: border-rotate 6s linear infinite;
+}
+
+@keyframes border-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.wheel-inner::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    bottom: 15px;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(76, 217, 100, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.prize-section {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: bottom right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.prize-section:hover {
+    filter: brightness(1.2);
+    transform-origin: bottom right;
+}
+
+.prize-section:nth-child(1) {
+    background: linear-gradient(135deg, #4cd964 0%, #34c759 100%);
+    transform: rotate(0deg);
+    box-shadow: inset 0 0 20px rgba(76, 217, 100, 0.3);
+}
+
+.prize-section:nth-child(2) {
+    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+    transform: rotate(60deg);
+    box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.prize-section:nth-child(3) {
+    background: linear-gradient(135deg, #ff9500 0%, #ff8c00 100%);
+    transform: rotate(120deg);
+    box-shadow: inset 0 0 20px rgba(255, 149, 0, 0.3);
+}
+
+.prize-section:nth-child(4) {
+    background: linear-gradient(135deg, #ff3b30 0%, #e60012 100%);
+    transform: rotate(180deg);
+    box-shadow: inset 0 0 20px rgba(255, 59, 48, 0.3);
+}
+
+.prize-section:nth-child(5) {
+    background: linear-gradient(135deg, #af52de 0%, #9932cc 100%);
+    transform: rotate(240deg);
+    box-shadow: inset 0 0 20px rgba(175, 82, 222, 0.3);
+}
+
+.prize-section:nth-child(6) {
+    background: linear-gradient(135deg, #007aff 0%, #0056b3 100%);
+    transform: rotate(300deg);
+    box-shadow: inset 0 0 20px rgba(0, 122, 255, 0.3);
+}
+
+.prize-text {
+    position: absolute;
+    transform: rotate(-30deg);
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-align: center;
+    width: 120px;
+    left: 45px;
+    top: 25px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.5px;
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-top: 50px solid #4cd964;
+    z-index: 10;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.wheel-pointer::before {
+    content: '';
+    position: absolute;
+    top: -48px;
+    left: -22px;
+    width: 44px;
+    height: 44px;
+    background: radial-gradient(circle, #4cd964 0%, #34c759 100%);
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 15px rgba(76, 217, 100, 0.6);
+}
+
+.wheel-pointer::after {
+    content: '⬇';
+    position: absolute;
+    top: -40px;
+    left: -10px;
+    font-size: 20px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Web3风格动画效果 */
+.lottery-wheel-container.spinning {
+    animation: container-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes container-pulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.02); }
+}
+
+.lottery-wheel-container.spinning::before {
+    animation-duration: 2s;
+    filter: blur(12px);
+    opacity: 0.8;
+}
+
+.lottery-wheel-container.mid-spin {
+    filter: brightness(1.1) saturate(1.2);
+}
+
+.lottery-wheel-container.spin-complete {
+    animation: completion-flash 0.5s ease-in-out;
+}
+
+@keyframes completion-flash {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3) saturate(1.5); }
+}
+
+.wheel-pointer.pointer-active {
+    animation: pointer-bounce 0.3s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 20px rgba(76, 217, 100, 0.8));
+}
+
+@keyframes pointer-bounce {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* 获奖效果 */
+.lottery-wheel-container.major-win {
+    animation: major-win-effect 1s ease-in-out;
+    filter: drop-shadow(0 0 50px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes major-win-effect {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.05) rotate(2deg); }
+    50% { transform: scale(1.1); }
+    75% { transform: scale(1.05) rotate(-2deg); }
+}
+
+.lottery-wheel-container.minor-win {
+    animation: minor-win-effect 0.8s ease-in-out;
+    filter: drop-shadow(0 0 30px rgba(76, 217, 100, 0.6));
+}
+
+@keyframes minor-win-effect {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+/* 烟花粒子效果 */
+.firework-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: radial-gradient(circle, #ffd700 0%, #ff6b6b 50%, transparent 100%);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: firework-explosion 1s ease-out forwards;
+    z-index: 1000;
+}
+
+@keyframes firework-explosion {
+    0% {
+        transform: scale(0) translate(0, 0);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1) translate(
+            calc((var(--random-x, 0.5) - 0.5) * 200px),
+            calc((var(--random-y, 0.5) - 0.5) * 200px)
+        );
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(0.5) translate(
+            calc((var(--random-x, 0.5) - 0.5) * 300px),
+            calc((var(--random-y, 0.5) - 0.5) * 300px)
+        );
+        opacity: 0;
+    }
+}
+
+/* 转盘悬停效果增强 */
+.lottery-wheel:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+.lottery-wheel:hover .wheel-inner {
+    filter: brightness(1.05);
+}
+
+/* 奖项区域悬停效果 */
+.prize-section:hover {
+    filter: brightness(1.3) saturate(1.2);
+    transform-origin: bottom right;
+    z-index: 5;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .lottery-wheel-container::before {
+        width: 380px;
+        height: 380px;
+    }
+    
+    .lottery-wheel {
+        width: 320px;
+        height: 320px;
+    }
+    
+    .prize-text {
+        font-size: 0.9rem;
+        width: 100px;
+        left: 35px;
+        top: 20px;
+    }
+    
+    .wheel-pointer {
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        border-top: 40px solid #4cd964;
+    }
+    
+    .wheel-pointer::before {
+        width: 36px;
+        height: 36px;
+        top: -38px;
+        left: -18px;
+    }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    .wheel-inner {
+        border: 6px solid #ffffff;
+    }
+    
+    .prize-text {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        font-weight: 800;
+    }
+}
+
+/* 抽奖控制区域样式 */
+.lottery-controls {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.draw-cost, .draw-times, .total-cost {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #b0b0b0;
+}
+
+.cost-amount, #total-cost-amount {
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.times-control {
+    display: flex;
+    align-items: center;
+}
+
+.times-btn {
+    width: 30px;
+    height: 30px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+#draw-times-input {
+    width: 50px;
+    text-align: center;
+    margin: 0 10px;
+    padding: 5px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background-color: #222;
+    color: white;
+}
+
+.draw-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 15px;
+}
+
+.draw-button:hover {
+    background-color: #45a049;
+}
+
+.draw-button:disabled {
+    background-color: #888;
+    cursor: not-allowed;
+}
+
+/* 抽奖结果区域样式 */
+.lottery-results {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.lottery-results h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #b0b0b0;
+}
+
+.results-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.result-item {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.result-item.first-prize {
+    background-color: rgba(255, 107, 107, 0.2);
+    border-left: 5px solid #FF6B6B;
+}
+
+.result-item.second-prize {
+    background-color: rgba(78, 205, 196, 0.2);
+    border-left: 5px solid #4ECDC4;
+}
+
+.result-item.third-prize {
+    background-color: rgba(255, 209, 102, 0.2);
+    border-left: 5px solid #FFD166;
+}
+
+.result-item.pool-prize {
+    background-color: rgba(6, 214, 160, 0.2);
+    border-left: 5px solid #06D6A0;
+}
+
+.result-item.double {
+    background-color: rgba(17, 138, 178, 0.2);
+    border-left: 5px solid #118AB2;
+}
+
+.result-item.nothing {
+    background-color: rgba(7, 59, 76, 0.2);
+    border-left: 5px solid #073B4C;
+}
+
+.result-name {
+    font-weight: bold;
+    color: #b0b0b0;
+}
+
+.result-value {
+    color: #4CAF50;
+}
+
+.no-results {
+    text-align: center;
+    padding: 20px;
+    color: #888;
+}
+
+/* 奖项说明区域样式 */
+.prize-info-section {
+    padding: 40px 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.prize-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.prize-info-card {
+    background-color: #1a1a1a;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.prize-info-card h3 {
+    margin-bottom: 10px;
+    color: #b0b0b0;
+}
+
+.prize-info-card p {
+    color: #888;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* 结果弹窗样式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #1a1a1a;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    text-align: center;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    color: #888;
+    cursor: pointer;
+}
+
+.result-title {
+    margin-bottom: 20px;
+    color: #b0b0b0;
+}
+
+.result-details {
+    margin-bottom: 30px;
+}
+
+.result-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+}
+
+.result-message {
+    color: #b0b0b0;
+    font-size: 1.2rem;
+}
+
+.close-result-btn {
+    padding: 12px 30px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    /* 艺术图区域移动端适配 */
+    .lottery-art-section {
+        padding: 30px 0;
+    }
+    
+    .art-placeholder {
+        height: 200px;
+        padding: 20px;
+    }
+    
+    .art-placeholder i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .art-placeholder p {
+        font-size: 1.1rem;
+    }
+    
+    .dimensions-hint {
+        font-size: 0.8rem;
+    }
+    
+    .lottery-wheel {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .prize-text {
+        font-size: 0.8rem;
+        width: 80px;
+        left: 40px;
+        top: 25px;
+    }
+    
+    .prize-info-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    /* 小屏幕设备的艺术图适配 */
+    .art-placeholder {
+        height: 150px;
+        padding: 15px;
+    }
+    
+    .art-placeholder i {
+        font-size: 2rem;
+    }
+    
+    .art-placeholder p {
+        font-size: 1rem;
+    }
+    
+    .art-image-container {
+        margin: 0 10px;
+    }
+}

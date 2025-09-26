@@ -1,0 +1,418 @@
+<!-- 
+========================================
+Xwawa 抽奖系统页面
+========================================
+项目：Xwawa Web3 抽奖平台
+技术栈：HTML5, CSS3, JavaScript, Web3.js, Ethers.js
+区块链：基于以太坊的智能合约抽奖系统
+
+主要功能：
+1. 钱包连接 (MetaMask, OKX Wallet等)
+2. 智能合约交互
+3. 可证明公平的抽奖机制
+4. 实时奖池显示
+5. 多语言支持 (中英文)
+6. Web3风格UI设计
+
+智能合约需求：
+- 抽奖合约 (LotteryContract)
+- 随机数生成 (Chainlink VRF)
+- 奖池管理
+- 奖励分发
+- 事件日志记录
+
+后端API需求：
+- GET /api/lottery/pool - 获取当前奖池
+- POST /api/lottery/draw - 记录抽奖结果
+- GET /api/lottery/history - 抽奖历史
+- GET /api/user/balance - 用户余额
+========================================
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xwawa Lottery</title>
+    <!-- 样式文件 -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/lottery.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 
+    ========================================
+    页面头部导航
+    ========================================
+    功能：品牌标识、导航、语言切换
+    ========================================
+    -->
+    <header>
+        <div class="logo-container">
+            <a href="index.html">
+                <img src="images/logo.svg" alt="Xwawa Logo" class="logo">
+                <span class="logo-text">XWAWA</span>
+            </a>
+        </div>
+        <!-- 语言切换器 - 需要后端保存用户偏好 -->
+        <div class="language-switcher">
+            <button id="en-btn" class="active">EN</button>
+            <button id="zh-btn">中文</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- 
+        ========================================
+        抽奖页面英雄区域
+        ========================================
+        功能：页面标题和介绍
+        ========================================
+        -->
+        <section class="lottery-hero">
+            <div class="container">
+                <h1 class="lottery-title" data-en="Xwawa Lucky Draw" data-zh="Xwawa 幸运抽奖">Xwawa Lucky Draw</h1>
+                <p class="lottery-subtitle" data-en="Spin the wheel and win amazing prizes!" data-zh="转动转盘，赢取惊喜奖品！">Spin the wheel and win amazing prizes!</p>
+            </div>
+        </section>
+
+        <!-- 
+        ========================================
+        抽奖主题图片展示区域
+        ========================================
+        功能：展示抽奖主题图片
+        图片需求：lottery.png (建议尺寸: 1200x400px)
+        ========================================
+        -->
+        <section class="lottery-art-section">
+            <div class="container">
+                <div class="art-banner">
+                    <div class="art-image-container">
+                        <img src="images/lottery.png" alt="Xwawa Lottery" class="lottery-main-image">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="lottery-section">
+            <div class="container">
+                <!-- 
+                ========================================
+                钱包连接区域
+                ========================================
+                功能：Web3钱包连接和状态显示
+                
+                支持的钱包：
+                - MetaMask
+                - OKX Wallet
+                - WalletConnect
+                - Coinbase Wallet
+                
+                状态管理：
+                - not-connected: 未连接
+                - connecting: 连接中
+                - connected: 已连接
+                - error: 连接错误
+                
+                智能合约交互：
+                - 检查用户余额
+                - 授权代币使用
+                - 调用抽奖函数
+                ========================================
+                -->
+                <div class="wallet-connection">
+                    <div id="wallet-status" class="not-connected">
+                        <span class="status-text" data-en="Wallet not connected" data-zh="钱包未连接">Wallet not connected</span>
+                    </div>
+                    <button id="connect-wallet-btn" class="connect-button" data-en="Connect Wallet" data-zh="连接钱包">Connect Wallet</button>
+                </div>
+
+                <!-- 
+                ========================================
+                抽奖转盘区域
+                ========================================
+                功能：可视化抽奖转盘
+                
+                奖项配置 (6个扇形区域)：
+                1. first-prize: 一等奖 (5% 概率)
+                2. second-prize: 二等奖 (10% 概率)
+                3. third-prize: 三等奖 (15% 概率)
+                4. pool-prize: 奖池奖 (20% 概率)
+                5. double: 双倍奖 (25% 概率)
+                6. nothing: 谢谢参与 (25% 概率)
+                
+                动画效果：
+                - 旋转动画 (CSS transform)
+                - 缓动效果 (cubic-bezier)
+                - 发光效果 (box-shadow)
+                - 粒子动画 (JavaScript)
+                
+                智能合约集成：
+                - 链上随机数生成
+                - 结果验证
+                - 奖励自动分发
+                ========================================
+                -->
+                <div class="lottery-wheel-container">
+                    <div class="lottery-wheel">
+                        <div class="wheel-inner">
+                            <!-- 转盘奖项 - 每个扇形60度 -->
+                            <div class="prize-section" data-prize="first-prize">
+                                <span class="prize-text" data-en="1st Prize" data-zh="一等奖">1st Prize</span>
+                            </div>
+                            <div class="prize-section" data-prize="second-prize">
+                                <span class="prize-text" data-en="2nd Prize" data-zh="二等奖">2nd Prize</span>
+                            </div>
+                            <div class="prize-section" data-prize="third-prize">
+                                <span class="prize-text" data-en="3rd Prize" data-zh="三等奖">3rd Prize</span>
+                            </div>
+                            <div class="prize-section" data-prize="pool-prize">
+                                <span class="prize-text" data-en="Pool Prize" data-zh="奖池奖">Pool Prize</span>
+                            </div>
+                            <div class="prize-section" data-prize="double">
+                                <span class="prize-text" data-en="Double" data-zh="双倍奖">Double</span>
+                            </div>
+                            <div class="prize-section" data-prize="nothing">
+                                <span class="prize-text" data-en="Try Again" data-zh="再接再厉">Try Again</span>
+                            </div>
+                        </div>
+                        <!-- 转盘指针 - 固定位置，转盘旋转 -->
+                        <div class="wheel-pointer"></div>
+                    </div>
+                </div>
+
+                <!-- 
+                ========================================
+                抽奖控制区域
+                ========================================
+                功能：抽奖参数设置和执行控制
+                
+                费用设置：
+                - 单次抽奖：10,000 XWAWA代币
+                - 最大连抽：10次
+                - 总费用实时计算
+                
+                智能合约交互：
+                - 检查用户余额是否足够
+                - 调用抽奖合约函数
+                - 处理交易确认
+                - 监听合约事件
+                
+                后端API：
+                - POST /api/lottery/validate - 验证抽奖参数
+                - GET /api/user/balance - 获取用户余额
+                - POST /api/lottery/execute - 执行抽奖
+                ========================================
+                -->
+                <div class="lottery-controls">
+                    <!-- 单次抽奖费用显示 -->
+                    <div class="draw-cost">
+                        <span data-en="Cost per draw:" data-zh="每次抽奖花费:">Cost per draw:</span>
+                        <span id="cost-amount">10,000 XWAWA</span>
+                    </div>
+                    
+                    <!-- 抽奖次数控制 -->
+                    <div class="draw-times">
+                        <label for="draw-times-input" data-en="Number of draws:" data-zh="抽奖次数:">Number of draws:</label>
+                        <div class="times-control">
+                            <button id="draw-times-minus" class="times-btn">-</button>
+                            <input type="number" id="draw-times-input" min="1" max="10" value="1">
+                            <button id="draw-times-plus" class="times-btn">+</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 总费用计算显示 -->
+                    <div class="total-cost">
+                        <span data-en="Total cost:" data-zh="总花费:">Total cost:</span>
+                        <span id="total-cost-amount">10,000 XWAWA</span>
+                    </div>
+                    
+                    <!-- 抽奖执行按钮 -->
+                    <button id="draw-button" class="draw-button" data-en="Spin the Wheel" data-zh="转动转盘">Spin the Wheel</button>
+                </div>
+
+                <!-- 
+                ========================================
+                抽奖结果显示区域
+                ========================================
+                功能：显示用户抽奖历史和结果
+                
+                数据结构：
+                {
+                  "drawId": "unique_id",
+                  "timestamp": "2024-01-01T00:00:00Z",
+                  "prize": "first-prize",
+                  "amount": "50000",
+                  "txHash": "0x...",
+                  "status": "confirmed"
+                }
+                
+                后端API：
+                - GET /api/lottery/user-history - 获取用户抽奖历史
+                - GET /api/lottery/result/{drawId} - 获取特定抽奖结果
+                
+                实时更新：
+                - WebSocket连接监听新结果
+                - 自动刷新机制
+                ========================================
+                -->
+                <div class="lottery-results">
+                    <h2 data-en="Your Results" data-zh="您的抽奖结果">Your Results</h2>
+                    <div id="results-container" class="results-list">
+                        <!-- 结果将通过JavaScript动态添加 -->
+                        <div class="no-results" data-en="No draws yet. Try your luck!" data-zh="还没有抽奖记录。试试您的运气吧！">No draws yet. Try your luck!</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 
+        ========================================
+        奖项说明区域
+        ========================================
+        功能：详细说明各个奖项的内容和价值
+        
+        奖项体系：
+        1. 一等奖：高级周边商品 (价值>$100)
+        2. 二等奖：特别收藏品 (价值$50-100)
+        3. 三等奖：品牌物品 (价值$20-50)
+        4. 奖池奖：动态奖金 (奖池的5-10%)
+        5. 双倍奖：返还双倍抽奖费用
+        6. 谢谢参与：无奖励
+        
+        后端管理：
+        - 奖品库存管理
+        - 发货地址收集
+        - 物流跟踪
+        - 数字奖励自动发放
+        ========================================
+        -->
+        <section class="prize-info-section">
+            <div class="container">
+                <h2 class="section-title" data-en="Prize Information" data-zh="奖项说明">Prize Information</h2>
+                <div class="prize-info-grid">
+                    <!-- 一等奖说明 -->
+                    <div class="prize-info-card">
+                        <h3 data-en="1st Prize Merchandise" data-zh="一等奖周边">1st Prize Merchandise</h3>
+                        <p data-en="Win exclusive premium Xwawa merchandise!" data-zh="赢取Xwawa限量版高级周边！">Win exclusive premium Xwawa merchandise!</p>
+                    </div>
+                    
+                    <!-- 二等奖说明 -->
+                    <div class="prize-info-card">
+                        <h3 data-en="2nd Prize Merchandise" data-zh="二等奖周边">2nd Prize Merchandise</h3>
+                        <p data-en="Win special Xwawa collectibles!" data-zh="赢取Xwawa特别收藏品！">Win special Xwawa collectibles!</p>
+                    </div>
+                    
+                    <!-- 三等奖说明 -->
+                    <div class="prize-info-card">
+                        <h3 data-en="3rd Prize Merchandise" data-zh="三等奖周边">3rd Prize Merchandise</h3>
+                        <p data-en="Win Xwawa branded items!" data-zh="赢取Xwawa品牌物品！">Win Xwawa branded items!</p>
+                    </div>
+                    
+                    <!-- 奖池奖说明 -->
+                    <div class="prize-info-card">
+                        <h3 data-en="Pool Prize" data-zh="奖池奖">Pool Prize</h3>
+                        <p data-en="Win a percentage of the prize pool plus your draw cost (minus fee)!" data-zh="赢取奖池一定比例的奖金加上您的抽奖费用（减去手续费）！">Win a percentage of the prize pool plus your draw cost (minus fee)!</p>
+                    </div>
+                    
+                    <!-- 双倍奖说明 -->
+                    <div class="prize-info-card">
+                        <h3 data-en="Double Bonus" data-zh="双倍奖">Double Bonus</h3>
+                        <p data-en="Get double your draw cost back (minus fee)!" data-zh="获得双倍抽奖费用返还（减去手续费）！">Get double your draw cost back (minus fee)!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 
+    ========================================
+    页脚区域
+    ========================================
+    功能：版权信息和法律声明
+    ========================================
+    -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Xwawa. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- 
+    ========================================
+    抽奖结果弹窗
+    ========================================
+    功能：显示抽奖结果的模态框
+    
+    显示内容：
+    - 中奖图标/动画
+    - 奖项名称
+    - 奖励数量
+    - 交易哈希
+    - 确认按钮
+    
+    触发条件：
+    - 抽奖完成后自动弹出
+    - 支持键盘ESC关闭
+    - 点击遮罩层关闭
+    
+    动画效果：
+    - 淡入淡出
+    - 缩放动画
+    - 庆祝特效 (中奖时)
+    ========================================
+    -->
+    <div id="result-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="result-title" class="result-title" data-en="Congratulations!" data-zh="恭喜您！">Congratulations!</h2>
+            <div class="result-details">
+                <!-- 结果图标 - 根据奖项动态设置 -->
+                <div id="result-icon" class="result-icon"></div>
+                <!-- 结果消息 - 动态生成 -->
+                <p id="result-message" class="result-message"></p>
+            </div>
+            <button id="close-result" class="close-result-btn" data-en="Continue" data-zh="继续">Continue</button>
+        </div>
+    </div>
+
+    <!-- 
+    ========================================
+    JavaScript文件引用
+    ========================================
+    文件说明：
+    
+    1. script.js - 通用功能
+       - 多语言切换
+       - 页面交互
+       - 工具函数
+    
+    2. lottery.js - 抽奖专用功能
+       - 转盘动画
+       - 抽奖逻辑
+       - 结果处理
+       - 智能合约交互
+    
+    3. Web3.js - 以太坊交互库
+       - 钱包连接
+       - 合约调用
+       - 交易处理
+    
+    4. Ethers.js - 现代以太坊库
+       - 更好的TypeScript支持
+       - 更简洁的API
+       - 备用方案
+    
+    加载顺序：
+    1. 通用脚本 (script.js)
+    2. 页面专用脚本 (lottery.js)
+    3. 第三方库 (Web3.js, Ethers.js)
+    ========================================
+    -->
+    <script src="js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.5.4/dist/ethers.umd.min.js"></script>
+    <script src="js/web3-connector.js"></script>
+    <script src="js/lottery.js"></script>
+</body>
+</html>

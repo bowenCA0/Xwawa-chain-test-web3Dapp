@@ -1,0 +1,312 @@
+<!--
+    Xwawa Marketplace - 商城页面
+    
+    项目概览:
+    - 基于Web3的代币商城系统
+    - 支持XWAWA代币支付
+    - 提供NFT、实体商品、会员服务等多种商品类型
+    - 集成钱包连接和区块链支付功能
+    
+    技术栈要求:
+    - 前端: HTML5, CSS3, JavaScript (ES6+)
+    - 区块链: Web3.js/Ethers.js, MetaMask集成
+    - 后端API: RESTful API, 订单管理系统
+    - 智能合约: ERC-20代币合约, 支付处理合约
+    - 第三方服务: QR码生成, 邮件服务
+    
+    主要功能模块:
+    1. 商品展示系统 - 支持多种商品类型展示
+    2. 代币支付系统 - XWAWA代币集成支付
+    3. 订单管理系统 - 订单创建、跟踪、确认
+    4. 钱包集成 - MetaMask等钱包连接
+    5. 多语言支持 - 中英文切换
+    6. 邮件通知系统 - 订单确认和状态更新
+    
+    后端API需求:
+    - GET /api/products - 获取商品列表
+    - POST /api/orders - 创建订单
+    - GET /api/orders/{id} - 查询订单状态
+    - POST /api/payments/verify - 验证支付状态
+    - GET /api/exchange-rate - 获取代币汇率
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xwawa Marketplace</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/marketplace.css">
+</head>
+<body>
+    <!-- 
+        页面头部导航区域
+        功能: 品牌标识、导航链接、语言切换
+        后端需求: 用户语言偏好保存 (POST /api/user/preferences)
+    -->
+    <header>
+        <div class="logo-container">
+            <a href="index.html">
+                <img src="images/logo.svg" alt="Xwawa Logo" class="logo">
+                <span class="logo-text">XWAWA</span>
+            </a>
+        </div>
+        <!-- 语言切换器 - 需要后端保存用户语言偏好 -->
+        <div class="language-switcher">
+            <button class="active" data-lang="en">EN</button>
+            <button data-lang="zh">中文</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- 
+            商城主标题区域
+            功能: 展示商城品牌信息和主要价值主张
+            数据需求: 支持多语言文本内容
+            后端API: GET /api/content/marketplace-hero (获取动态标题和描述)
+        -->
+        <section class="marketplace-hero">
+            <div class="container">
+                <h1 class="marketplace-title" data-en="Xwawa Marketplace" data-zh="Xwawa 商城">Xwawa Marketplace</h1>
+                <p class="marketplace-subtitle" data-en="Spend your Xwawa tokens on exclusive items" data-zh="使用您的 Xwawa 代币购买专属商品">Spend your Xwawa tokens on exclusive items</p>
+            </div>
+        </section>
+
+        <!-- 
+            商品展示区域
+            功能: 展示可购买的商品列表，支持多种商品类型
+            
+            后端API需求:
+            - GET /api/products - 获取商品列表
+              响应格式: {
+                "products": [
+                  {
+                    "id": 1,
+                    "name": {"en": "Xwawa Limited NFT", "zh": "Xwawa 限量版 NFT"},
+                    "description": {"en": "Exclusive digital...", "zh": "Xwawa 社区成员..."},
+                    "price_usd": 49.99,
+                    "price_token": 500,
+                    "image": "images/feature1.svg",
+                    "type": "nft|physical|membership|digital",
+                    "stock": 100,
+                    "is_available": true,
+                    "metadata": {...}
+                  }
+                ]
+              }
+            
+            智能合约需求:
+            - 商品购买合约: 处理代币支付和商品分发
+            - NFT合约: 处理NFT铸造和转移
+            - 会员合约: 处理会员权限管理
+            
+            前端功能:
+            - 商品筛选和搜索
+            - 价格实时转换 (USD ↔ XWAWA)
+            - 库存状态显示
+            - 购买流程处理
+        -->
+        <section class="products-section">
+            <div class="container">
+                <h2 class="section-title" data-en="Featured Products" data-zh="精选商品">Featured Products</h2>
+                
+                <div class="products-grid">
+                    <!-- 
+                        商品卡片 - NFT类型
+                        数据属性说明:
+                        - data-product-id: 商品唯一标识符
+                        - data-product-name: 商品名称 (用于订单)
+                        - data-product-price: 商品价格 (USD)
+                        - data-product-type: 商品类型 (nft/physical/membership/digital)
+                    -->
+                    <div class="product-card" data-product-type="nft">
+                        <div class="product-image">
+                            <img src="images/feature1.svg" alt="Xwawa NFT">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title" data-en="Xwawa Limited NFT" data-zh="Xwawa 限量版 NFT">Xwawa Limited NFT</h3>
+                            <p class="product-description" data-en="Exclusive digital collectible for Xwawa community members." data-zh="Xwawa 社区成员专属数字收藏品。">Exclusive digital collectible for Xwawa community members.</p>
+                            <!-- 价格显示 - 需要实时汇率转换 -->
+                            <div class="product-price">
+                                <span class="price-usd">$49.99</span>
+                                <span class="price-token">≈ 500 XWAWA</span>
+                            </div>
+                            <button class="buy-button" data-product-id="1" data-product-name="Xwawa Limited NFT" data-product-price="49.99" data-en="Pay with Xwawa" data-zh="用 Xwawa 支付">Pay with Xwawa</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 商品卡片 - 实体商品类型 (需要物流配送) -->
+                    <div class="product-card" data-product-type="physical">
+                        <div class="product-image">
+                            <img src="images/feature2.svg" alt="Xwawa T-Shirt">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title" data-en="Xwawa T-Shirt" data-zh="Xwawa T恤">Xwawa T-Shirt</h3>
+                            <p class="product-description" data-en="Premium quality t-shirt with Xwawa logo and design." data-zh="优质面料T恤，印有Xwawa标志和设计。">Premium quality t-shirt with Xwawa logo and design.</p>
+                            <div class="product-price">
+                                <span class="price-usd">$29.99</span>
+                                <span class="price-token">≈ 300 XWAWA</span>
+                            </div>
+                            <button class="buy-button" data-product-id="2" data-product-name="Xwawa T-Shirt" data-product-price="29.99" data-en="Pay with Xwawa" data-zh="用 Xwawa 支付">Pay with Xwawa</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 
+                        商品卡片 - 会员服务类型
+                        特殊需求: 需要会员系统集成，权限管理
+                        智能合约: 会员NFT或权限代币发放
+                    -->
+                    <div class="product-card" data-product-type="membership">
+                        <div class="product-image">
+                            <img src="images/feature3.svg" alt="Xwawa Premium Membership">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title" data-en="Premium Membership" data-zh="高级会员">Premium Membership</h3>
+                            <p class="product-description" data-en="1-year premium membership with exclusive benefits and early access." data-zh="1年高级会员资格，享受专属福利和抢先体验权。">1-year premium membership with exclusive benefits and early access.</p>
+                            <div class="product-price">
+                                <span class="price-usd">$99.99</span>
+                                <span class="price-token">≈ 1000 XWAWA</span>
+                            </div>
+                            <button class="buy-button" data-product-id="3" data-product-name="Premium Membership" data-product-price="99.99" data-en="Pay with Xwawa" data-zh="用 Xwawa 支付">Pay with Xwawa</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 商品卡片 - 数字商品类型 (即时交付) -->
+                    <div class="product-card" data-product-type="digital">
+                        <div class="product-image">
+                            <img src="images/feature4.svg" alt="Xwawa Sticker Pack">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title" data-en="Xwawa Sticker Pack" data-zh="Xwawa 贴纸包">Xwawa Sticker Pack</h3>
+                            <p class="product-description" data-en="Set of 10 high-quality vinyl stickers featuring Xwawa characters." data-zh="10张高质量乙烯基贴纸，展示Xwawa角色。">Set of 10 high-quality vinyl stickers featuring Xwawa characters.</p>
+                            <div class="product-price">
+                                <span class="price-usd">$9.99</span>
+                                <span class="price-token">≈ 100 XWAWA</span>
+                            </div>
+                            <button class="buy-button" data-product-id="4" data-product-name="Xwawa Sticker Pack" data-product-price="9.99" data-en="Pay with Xwawa" data-zh="用 Xwawa 支付">Pay with Xwawa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 
+        支付弹窗 - 订单创建和支付处理
+        功能: 处理完整的购买流程，从订单创建到支付确认
+        
+        支付流程:
+        1. 用户点击购买按钮 → 打开支付弹窗
+        2. 填写邮箱信息 → 创建订单
+        3. 显示支付信息 (钱包地址、金额、QR码)
+        4. 用户发送代币 → 系统验证支付
+        5. 支付确认 → 订单完成，发送确认邮件
+        
+        后端API需求:
+        - POST /api/orders - 创建订单
+          请求: {product_id, email, quantity, payment_method: "xwawa"}
+          响应: {order_id, payment_address, token_amount, expires_at}
+        - GET /api/orders/{id}/status - 查询订单状态
+        - POST /api/payments/verify - 验证支付交易
+        
+        智能合约集成:
+        - 监听代币转账事件
+        - 验证支付金额和接收地址
+        - 自动确认有效支付
+    -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="modal-title" data-en="Complete Your Purchase" data-zh="完成您的购买">Complete Your Purchase</h2>
+            
+            <!-- 订单摘要区域 -->
+            <div class="order-summary">
+                <h3 data-en="Order Summary" data-zh="订单摘要">Order Summary</h3>
+                <div class="order-details">
+                    <p><span data-en="Product:" data-zh="商品:">Product:</span> <span id="modal-product-name"></span></p>
+                    <p><span data-en="Price:" data-zh="价格:">Price:</span> $<span id="modal-product-price"></span></p>
+                    <p><span data-en="Xwawa Tokens Required:" data-zh="所需Xwawa代币:">Xwawa Tokens Required:</span> <span id="modal-token-amount"></span> XWAWA</p>
+                </div>
+            </div>
+            
+            <!-- 
+                邮箱收集区域
+                用途: 订单确认、数字商品交付、客服联系
+                验证: 邮箱格式验证，必填项
+            -->
+            <div class="email-form">
+                <h3 data-en="Your Email" data-zh="您的邮箱">Your Email</h3>
+                <p data-en="We'll send your purchase confirmation and details to this email" data-zh="我们将向此邮箱发送购买确认和详细信息">We'll send your purchase confirmation and details to this email</p>
+                <input type="email" id="customer-email" placeholder="your@email.com" required>
+            </div>
+            
+            <!-- 
+                支付信息区域 (订单创建后显示)
+                功能: 显示支付所需的详细信息
+                安全要求: 
+                - 支付地址动态生成，避免地址重用
+                - 订单有效期限制 (通常15分钟)
+                - 金额精确匹配验证
+            -->
+            <div class="payment-info hidden" id="payment-info">
+                <h3 data-en="Payment Information" data-zh="支付信息">Payment Information</h3>
+                <p data-en="Send exactly the following amount of Xwawa tokens to complete your purchase:" data-zh="发送以下确切数量的Xwawa代币以完成购买:">Send exactly the following amount of Xwawa tokens to complete your purchase:</p>
+                
+                <!-- QR码区域 - 便于移动端扫码支付 -->
+                <div class="qr-code-container">
+                    <div id="payment-qr-code"></div>
+                </div>
+                
+                <!-- 支付地址区域 - 支持复制功能 -->
+                <div class="payment-address">
+                    <p data-en="Wallet Address:" data-zh="钱包地址:">Wallet Address:</p>
+                    <div class="address-copy">
+                        <input type="text" id="wallet-address" readonly title="Wallet address for payment" placeholder="Payment wallet address will be shown here">
+                        <button id="copy-address" data-en="Copy" data-zh="复制">Copy</button>
+                    </div>
+                </div>
+                
+                <!-- 支付详情 - 订单跟踪信息 -->
+                <div class="payment-details">
+                    <p><span data-en="Amount:" data-zh="金额:">Amount:</span> <span id="payment-token-amount"></span> XWAWA</p>
+                    <p><span data-en="Order ID:" data-zh="订单ID:">Order ID:</span> <span id="order-id"></span></p>
+                    <p><span data-en="Expires in:" data-zh="过期时间:">Expires in:</span> <span id="expiry-time">15:00</span></p>
+                </div>
+            </div>
+            
+            <!-- 
+                弹窗操作按钮
+                流程控制: 创建订单 → 检查支付状态 → 完成购买
+            -->
+            <div class="modal-actions">
+                <button id="create-order-btn" data-en="Create Order" data-zh="创建订单">Create Order</button>
+                <button id="check-payment-btn" class="hidden" data-en="Check Payment Status" data-zh="检查支付状态">Check Payment Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚区域 -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Xwawa. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- 
+        JavaScript文件引用
+        - script.js: 通用功能 (语言切换、钱包连接等)
+        - marketplace.js: 商城特定功能 (商品展示、购买流程、支付处理)
+        - qrcode.js: QR码生成库 (用于支付地址展示)
+        
+        主要功能:
+        1. 商品数据获取和展示
+        2. 购买流程管理
+        3. 支付状态监控
+        4. 订单状态更新
+        5. 用户体验优化 (加载状态、错误处理)
+    -->
+    <script src="js/script.js"></script>
+    <script src="js/marketplace.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode.js/lib/qrcode.min.js"></script>
+</body>
+</html>

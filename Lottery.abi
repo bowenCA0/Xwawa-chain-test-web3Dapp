@@ -1,0 +1,540 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "_winningRate",
+        "type": "tuple",
+        "internalType": "struct Lottery.WinningRate",
+        "components": [
+          {
+            "name": "firstPrizeOfMerch",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "secondPrizeOfMerch",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "thirdPrizeOfMerch",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "partOfPool",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "doubleBonus",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "nothing",
+            "type": "uint64",
+            "internalType": "uint64"
+          }
+        ]
+      },
+      {
+        "name": "_drawCost",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_feeToCommunity",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_communityTreasury",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "_partRate",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_owner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "XWAWA_COIN",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "communityTreasury",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "draw",
+    "inputs": [
+      {
+        "name": "_times",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "winningType",
+        "type": "uint8[]",
+        "internalType": "enum Lottery.WinningType[]"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "drawCost",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "drawTimes",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "feeToCommunity",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "pause",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "paused",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "rateOf_partOfPool_",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "renounceOwnership",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setDrawCost",
+    "inputs": [
+      {
+        "name": "_drawCost",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setPartOfPoolRate",
+    "inputs": [
+      {
+        "name": "_rate",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setWinningRate",
+    "inputs": [
+      {
+        "name": "_winningRate",
+        "type": "tuple",
+        "internalType": "struct Lottery.WinningRate",
+        "components": [
+          {
+            "name": "firstPrizeOfMerch",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "secondPrizeOfMerch",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "thirdPrizeOfMerch",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "partOfPool",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "doubleBonus",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "nothing",
+            "type": "uint64",
+            "internalType": "uint64"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [
+      {
+        "name": "newOwner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unpause",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "winningRate",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "firstPrizeOfMerch",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "secondPrizeOfMerch",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "thirdPrizeOfMerch",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "partOfPool",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "doubleBonus",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "nothing",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "Draw",
+    "inputs": [
+      {
+        "name": "player",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "winningType",
+        "type": "uint8[]",
+        "indexed": false,
+        "internalType": "enum Lottery.WinningType[]"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferred",
+    "inputs": [
+      {
+        "name": "previousOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "newOwner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Paused",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Unpaused",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "UpdateDrawCost",
+    "inputs": [
+      {
+        "name": "drawCost",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "UpdatePartOfPoolRate",
+    "inputs": [
+      {
+        "name": "rate",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "UpdateWinningRate",
+    "inputs": [
+      {
+        "name": "winningRate",
+        "type": "tuple",
+        "indexed": false,
+        "internalType": "struct Lottery.WinningRate",
+        "components": [
+          {
+            "name": "firstPrizeOfMerch",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "secondPrizeOfMerch",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "thirdPrizeOfMerch",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "partOfPool",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "doubleBonus",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "nothing",
+            "type": "uint64",
+            "internalType": "uint64"
+          }
+        ]
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "EnforcedPause",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ExpectedPause",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvaildParam",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvaildWinningRate",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "OnlyEOA",
+    "inputs": [
+      {
+        "name": "a1",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "a2",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnableInvalidOwner",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnableUnauthorizedAccount",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SafeERC20FailedOperation",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  }
+]

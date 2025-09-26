@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xwawa - Official Website</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- 
+    ========================================
+    XWAWA 主页面 - 项目概览
+    ========================================
+    
+    项目描述：
+    Xwawa是基于OKX Web3平台的创新代币项目，包含市场交易和抽奖系统
+    
+    技术栈要求：
+    - 前端：HTML5, CSS3, JavaScript (ES6+)
+    - 区块链：Web3.js, MetaMask集成
+    - 后端API：RESTful API, WebSocket (实时数据)
+    - 数据库：用户数据、交易记录、抽奖历史
+    
+    主要功能模块：
+    1. 语言切换系统 (中英文)
+    2. 艺术作品展示轮播
+    3. 市场交易入口
+    4. 抽奖系统入口
+    5. 项目介绍和统计数据
+    
+    后端API需求：
+    - GET /api/stats - 获取用户数和交易数统计
+    - GET /api/artworks - 获取艺术作品列表
+    - POST /api/language - 保存用户语言偏好
+    ========================================
+    -->
+    
+    <!-- 语言切换器 - 需要后端保存用户语言偏好 -->
+    <div class="language-switcher">
+        <button id="en-btn" class="active">EN</button>
+        <button id="zh-btn">中文</button>
+    </div>
+
+    <!-- 品牌标识区域 -->
+    <div class="logo-container">
+        <img src="images/logo.svg" alt="Xwawa Logo" class="logo">
+        <h1>XWAWA</h1>
+    </div>
+
+    <main>
+        <!-- 
+        ========================================
+        英雄区域 - 项目主要介绍
+        ========================================
+        功能：展示项目核心价值主张和品牌形象
+        数据需求：无需后端数据，静态内容
+        注意：所有文本都支持中英文切换
+        ========================================
+        -->
+        <section class="hero dark-bg">
+            <div class="hero-content">
+                <h2 class="hero-title" data-en="Discover the Future of Web3 with Xwawa" data-zh="探索Xwawa的Web3未来">Discover the Future of Web3 with Xwawa</h2>
+                <p class="hero-subtitle" data-en="Xwawa is the innovative Web3 marketplace token built on the OKX platform. Experience seamless trading, decentralized finance, and cutting-edge blockchain technology. Join our vibrant community and unlock the potential of digital assets in the next generation of internet commerce." data-zh="Xwawa是基于欧意平台构建的创新Web3市场代币。体验无缝交易、去中心化金融和前沿区块链技术。加入我们充满活力的社区，释放下一代互联网商务中数字资产的潜力。">Xwawa is the innovative Web3 marketplace token built on the OKX platform. Experience seamless trading, decentralized finance, and cutting-edge blockchain technology. Join our vibrant community and unlock the potential of digital assets in the next generation of internet commerce.</p>
+                <div class="hero-buttons">
+                    <a href="about.html" class="cta-button secondary" data-en="Launch App" data-zh="启动应用">启动应用</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="images/hero-image.svg" alt="Xwawa Mascot">
+            </div>
+        </section>
+
+        <!-- 
+        ========================================
+        艺术作品展示轮播区域
+        ========================================
+        功能：展示项目相关的艺术作品集合
+        
+        后端API需求：
+        - GET /api/artworks - 获取艺术作品列表
+        响应格式：
+        {
+          "artworks": [
+            {
+              "id": 1,
+              "title": "作品标题",
+              "image_url": "images/artwork-1.png",
+              "description": "作品描述",
+              "artist": "艺术家名称",
+              "created_at": "2025-01-01"
+            }
+          ]
+        }
+        
+        前端功能：
+        - 自动轮播 (5秒间隔)
+        - 手动切换 (左右箭头)
+        - 指示器点击跳转
+        - 响应式设计
+        ========================================
+        -->
+        <section class="art-gallery-section" id="art-gallery">
+            <div class="art-carousel-container">
+                <div class="art-carousel-wrapper">
+                    <div class="art-carousel-slides">
+                        <!-- 11张艺术图片 -->
+                        <div class="art-slide active">
+                            <img src="images/artwork-1.png" alt="Artwork 1" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-2.png" alt="Artwork 2" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-3.png" alt="Artwork 3" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-4.png" alt="Artwork 4" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-5.png" alt="Artwork 5" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-6.png" alt="Artwork 6" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-7.png" alt="Artwork 7" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-8.png" alt="Artwork 8" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-9.png" alt="Artwork 9" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-10.png" alt="Artwork 10" class="art-image">
+                        </div>
+                        <div class="art-slide">
+                            <img src="images/artwork-11.png" alt="Artwork 11" class="art-image">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 轮播控制按钮 -->
+                <button class="art-carousel-btn art-prev-btn" title="Previous artwork" aria-label="Previous artwork">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="art-carousel-btn art-next-btn" title="Next artwork" aria-label="Next artwork">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                <!-- 轮播指示器 -->
+                <div class="art-carousel-indicators">
+                    <span class="art-indicator active" data-slide="0"></span>
+                    <span class="art-indicator" data-slide="1"></span>
+                    <span class="art-indicator" data-slide="2"></span>
+                    <span class="art-indicator" data-slide="3"></span>
+                    <span class="art-indicator" data-slide="4"></span>
+                    <span class="art-indicator" data-slide="5"></span>
+                    <span class="art-indicator" data-slide="6"></span>
+                    <span class="art-indicator" data-slide="7"></span>
+                    <span class="art-indicator" data-slide="8"></span>
+                    <span class="art-indicator" data-slide="9"></span>
+                    <span class="art-indicator" data-slide="10"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 
+        ========================================
+        功能模块卡片区域
+        ========================================
+        包含三个主要功能模块的介绍和入口
+        ========================================
+        -->
+        <div class="section-cards">
+            <!-- 
+            ========================================
+            市场交易模块
+            ========================================
+            功能：NFT和数字资产交易平台
+            
+            智能合约需求：
+            - ERC-721 (NFT标准)
+            - ERC-1155 (多代币标准)
+            - 市场交易合约 (买卖、拍卖)
+            - 版税分配合约
+            
+            后端API需求：
+            - GET /api/marketplace/items - 获取市场商品
+            - POST /api/marketplace/list - 上架商品
+            - POST /api/marketplace/buy - 购买商品
+            - GET /api/marketplace/history - 交易历史
+            ========================================
+            -->
+            <div class="section-card" id="marketplace">
+                <div class="section-header-with-icons">
+                    <h2 class="section-title" data-en="Marketplace" data-zh="商城">Marketplace</h2>
+                    <div class="section-icons marketplace-icons">
+                        <div class="icon-item">🛒</div>
+                        <div class="icon-item">💎</div>
+                        <div class="icon-item">🏪</div>
+                        <div class="icon-item">🎁</div>
+                        <div class="icon-item">💰</div>
+                    </div>
+                </div>
+                <p class="section-description" data-en="Use your XWAWA tokens to purchase exclusive merchandise and collectibles! Discover unique items and special edition products in our marketplace." data-zh="使用您的XWAWA币购买独家周边商品和收藏品！在我们的商城中发现独特的商品和限量版产品。">Use your XWAWA tokens to purchase exclusive merchandise and collectibles! Discover unique items and special edition products in our marketplace.</p>
+                <a href="marketplace.html" class="cta-button secondary" data-en="Start Trading" data-zh="开始交易">Start Trading</a>
+            </div>
+
+            <!-- 
+            ========================================
+            抽奖系统模块
+            ========================================
+            功能：基于区块链的公平抽奖系统
+            
+            智能合约需求：
+            - 抽奖合约 (可证明公平性)
+            - 随机数生成 (Chainlink VRF推荐)
+            - 奖池管理合约
+            - 奖励分发合约
+            
+            后端API需求：
+            - GET /api/lottery/current - 当前奖池信息
+            - POST /api/lottery/participate - 参与抽奖
+            - GET /api/lottery/history - 抽奖历史
+            - GET /api/lottery/winners - 中奖记录
+            
+            关键功能：
+            - 每次抽奖消耗10 XWAWA代币
+            - 6个奖项等级 (一等奖到谢谢参与)
+            - 实时奖池更新
+            - 中奖概率透明化
+            ========================================
+            -->
+            <div class="section-card" id="lottery">
+                <div class="section-header-with-icons">
+                    <h2 class="section-title" data-en="Lottery System" data-zh="抽奖系统">Lottery System</h2>
+                    <div class="section-icons lottery-icons">
+                        <div class="icon-item">🎲</div>
+                        <div class="icon-item">🍀</div>
+                        <div class="icon-item">🎰</div>
+                        <div class="icon-item">🏆</div>
+                        <div class="icon-item">✨</div>
+                    </div>
+                </div>
+                <p class="section-description" data-en="Try your luck to win XWAWA tokens! Join our fair lottery system and test your fortune with exciting rewards waiting for you." data-zh="试试运气获取XWAWA币！加入我们公平的抽奖系统，测试您的运气，精彩奖励等着您。">Try your luck to win XWAWA tokens! Join our fair lottery system and test your fortune with exciting rewards waiting for you.</p>
+                <a href="lottery.html" class="cta-button secondary" data-en="Play Now" data-zh="立即游戏">Play Now</a>
+            </div>
+
+            <!-- 
+            ========================================
+            关于我们模块
+            ========================================
+            功能：项目介绍和团队信息
+            数据需求：静态内容，支持中英文切换
+            ========================================
+            -->
+            <div class="section-card" id="about">
+                <h2 class="section-title" data-en="About Us" data-zh="关于我们">About Us</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p data-en="XWAWA is a product under WAWA on the OKX platform, bringing you innovative digital experiences with a cute and friendly approach." data-zh="XWAWA是WAWA在欧意平台旗下的产品，以可爱友好的方式为您带来创新的数字体验。">XWAWA is a product under WAWA on the OKX platform, bringing you innovative digital experiences with a cute and friendly approach.</p>
+                        <a href="about.html" class="cta-button secondary about-detail-btn" data-en="Learn More" data-zh="了解详细">了解详细</a>
+                    </div>
+                    <div class="about-image">
+                        <img src="images/about-image.svg" alt="About Xwawa">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 
+        ========================================
+        实时价格显示区域
+        ========================================
+        功能：显示XWAWA代币和比特币的实时价格
+        
+        数据来源：
+        - XWAWA价格：CoinGecko API 或自定义API
+        - 比特币价格：OKX API
+        
+        更新频率：每30秒自动更新一次
+        
+        API接口：
+        - XWAWA: https://api.coingecko.com/api/v3/simple/price?ids=xwawa&vs_currencies=usd
+        - BTC: https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT
+        ========================================
+        -->
+        <section class="price-display">
+            <div class="price-item">
+                <div class="price-icon">
+                    <img src="images/xwawa-token.svg" alt="XWAWA Token" class="token-icon">
+                </div>
+                <div class="price-info">
+                    <h3 class="price-label" data-en="XWAWA Token" data-zh="XWAWA 代币">XWAWA Token</h3>
+                    <div class="price-value">
+                        <span class="price-amount" id="xwawa-price">$0.0000</span>
+                        <span class="price-change" id="xwawa-change">+0.00%</span>
+                    </div>
+                    <p class="price-update" data-en="Last updated" data-zh="最后更新">Last updated: <span id="xwawa-time">--:--</span></p>
+                </div>
+            </div>
+            <div class="price-item">
+                <div class="price-icon">
+                    <div class="btc-icon">₿</div>
+                </div>
+                <div class="price-info">
+                    <h3 class="price-label" data-en="Bitcoin (OKX)" data-zh="比特币 (OKX)">Bitcoin (OKX)</h3>
+                    <div class="price-value">
+                        <span class="price-amount" id="btc-price">$0.00</span>
+                        <span class="price-change" id="btc-change">+0.00%</span>
+                    </div>
+                    <p class="price-update" data-en="Last updated" data-zh="最后更新">Last updated: <span id="btc-update">--:--</span></p>
+                </div>
+            </div>
+            <div class="price-item">
+                <div class="price-icon">
+                    <img src="images/okb-token.svg" alt="OKB Token" class="token-icon">
+                </div>
+                <div class="price-info">
+                    <h3 class="price-label" data-en="OKB Token" data-zh="OKB 代币">OKB Token</h3>
+                    <div class="price-value">
+                        <span class="price-amount" id="okb-price">$0.00</span>
+                        <span class="price-change" id="okb-change">+0.00%</span>
+                    </div>
+                    <p class="price-update" data-en="Last updated" data-zh="最后更新">Last updated: <span id="okb-update">--:--</span></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 
+    ========================================
+    页脚区域
+    ========================================
+    功能：网站导航、社区链接、支持信息
+    
+    后端API需求：
+    - GET /api/footer/links - 获取动态链接配置
+    - GET /api/social/links - 获取社交媒体链接
+    
+    社区链接管理：
+    - Discord服务器邀请链接
+    - Twitter官方账号
+    - Telegram群组链接
+    
+    支持系统：
+    - 帮助中心 (知识库系统)
+    - 客服系统集成
+    - FAQ动态更新
+    ========================================
+    -->
+    <footer>
+        <div class="footer-content">
+            <!-- 快速导航链接 -->
+            <div class="footer-section">
+                <h3 data-en="Quick Links" data-zh="快速链接">Quick Links</h3>
+                <ul>
+                    <li><a href="#" data-en="Home" data-zh="首页">Home</a></li>
+                    <li><a href="marketplace.html" data-en="Marketplace" data-zh="商城">Marketplace</a></li>
+                    <li><a href="lottery.html" data-en="Lottery" data-zh="抽奖">Lottery</a></li>
+                </ul>
+            </div>
+            
+            <!-- 社区链接 - 需要后端配置管理 -->
+            <div class="footer-section">
+                <h3 data-en="Community" data-zh="社区">Community</h3>
+                <ul>
+                    <li><a href="#" data-en="Discord" data-zh="Discord">Discord</a></li>
+                    <li><a href="#" data-en="Twitter" data-zh="Twitter">Twitter</a></li>
+                    <li><a href="#" data-en="Telegram" data-zh="Telegram">Telegram</a></li>
+                </ul>
+            </div>
+            
+            <!-- 支持和帮助 -->
+            <div class="footer-section">
+                <h3 data-en="Support" data-zh="支持">Support</h3>
+                <ul>
+                    <li><a href="#" data-en="Help Center" data-zh="帮助中心">Help Center</a></li>
+                    <li><a href="#" data-en="Contact Us" data-zh="联系我们">Contact Us</a></li>
+                    <li><a href="#" data-en="FAQ" data-zh="常见问题">FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 版权信息 -->
+        <div class="footer-bottom">
+            <p>&copy; 2024 Xwawa. <span data-en="All rights reserved." data-zh="版权所有。">All rights reserved.</span></p>
+        </div>
+    </footer>
+
+    <!-- 
+    ========================================
+    JavaScript文件引用
+    ========================================
+    主要功能：
+    - 多语言切换
+    - 钱包连接
+    - 页面交互
+    - 数据获取和显示
+    ========================================
+    -->
+    <script src="js/script.js"></script>
+</body>
+</html>
