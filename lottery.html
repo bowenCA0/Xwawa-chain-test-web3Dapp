@@ -34,10 +34,258 @@ Xwawa 抽奖系统页面
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xwawa Lottery</title>
+    <link rel="icon" type="image/svg+xml" href="images/logo.svg">
     <!-- 样式文件 -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/lottery.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 合约前端配置（加载Lottery.abi与部署地址） -->
+    <script src="js/contract-config.js"></script>
+    <!-- ContractConfig 后备配置：若上方脚本加载失败，提供内联配置以保证功能可用 -->
+    <script>
+        (function ensureContractConfigFallback(){
+            try {
+                if (!window.ContractConfig || typeof window.ContractConfig.loadLotteryAbi !== 'function') {
+                    window.ContractConfig = {
+                        lotteryAddress: "0xdD8ce9b7493af5A7a40e2Ca7f1c23F8d030e6c8e",
+                        xwawaTokenAddress: "0x50c7e04b3DfFab021c9Ab258D62eFb23E41DC6f4",
+                        communityTreasuryAddress: "0xCD6C5393F06dFF566f52ec2cAB51c3cA2B047dba",
+                        rpcUrl: "https://xlayertestrpc.okx.com/terigon",
+                        chainId: 1952,
+                        // WalletConnect v2 项目ID（确保扫码/手机直连使用 v2）
+                        walletConnectProjectId: "01ee15712187949f2a2dadb65cda86ae",
+                        async loadLotteryAbi() {
+                            const res = await fetch('./Lottery.abi');
+                            if (!res.ok) throw new Error('加载 Lottery.abi 失败');
+                            return await res.json();
+                        }
+                    };
+                    console.warn('ContractConfig 未从 js/contract-config.js 加载，已启用内联后备配置');
+                }
+            } catch (e) {
+                console.error('初始化 ContractConfig 后备配置失败:', e);
+            }
+        })();
+    </script>
+    
+    <!-- Web3Modal 样式 -->
+    <style>
+        /* Web3Modal 自定义样式 */
+        .web3modal-modal-lightbox {
+            z-index: 10000;
+        }
+        
+        .web3modal-modal-card {
+            border-radius: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .web3modal-provider-container {
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .web3modal-provider-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .wallet-connect-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 30px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .wallet-connect-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .wallet-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        
+        .wallet-status.connected {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .wallet-status.not-connected {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        
+        /* 收货信息弹窗样式 */
+        .shipping-modal-content {
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .shipping-form {
+            padding: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        /* 中奖详情弹窗样式 */
+        .prize-detail-modal-content {
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .prize-detail-content {
+            padding: 20px 0;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .detail-item label {
+            font-weight: 600;
+            color: #333;
+            min-width: 100px;
+            margin-right: 15px;
+            margin-bottom: 0;
+        }
+
+        .detail-item span {
+            color: #666;
+            flex: 1;
+        }
+
+        .detail-item input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .detail-item input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        /* 详情按钮样式 */
+        .detail-btn {
+            padding: 6px 12px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .detail-btn:hover {
+            background: #138496;
+            transform: translateY(-1px);
+        }
+    </style>
 </head>
 <body>
     <!-- 
@@ -69,13 +317,6 @@ Xwawa 抽奖系统页面
         功能：页面标题和介绍
         ========================================
         -->
-        <section class="lottery-hero">
-            <div class="container">
-                <h1 class="lottery-title" data-en="Xwawa Lucky Draw" data-zh="Xwawa 幸运抽奖">Xwawa Lucky Draw</h1>
-                <p class="lottery-subtitle" data-en="Spin the wheel and win amazing prizes!" data-zh="转动转盘，赢取惊喜奖品！">Spin the wheel and win amazing prizes!</p>
-            </div>
-        </section>
-
         <!-- 
         ========================================
         抽奖主题图片展示区域
@@ -121,11 +362,20 @@ Xwawa 抽奖系统页面
                 ========================================
                 -->
                 <div class="wallet-connection">
-                    <div id="wallet-status" class="not-connected">
-                        <span class="status-text" data-en="Wallet not connected" data-zh="钱包未连接">Wallet not connected</span>
+                    <div id="wallet-status" class="wallet-status not-connected">
+                        <span class="status-text" data-en="Wallet not connected" data-zh="钱包未连接">钱包未连接</span>
+                        <span id="wallet-address" class="wallet-address"></span>
+                        <span id="wallet-balance" class="wallet-balance"></span>
                     </div>
-                    <button id="connect-wallet-btn" class="connect-button" data-en="Connect Wallet" data-zh="连接钱包">Connect Wallet</button>
+                    
+                    <!-- Web3Modal 连接按钮 -->
+                    <button id="connect-wallet-btn" class="wallet-connect-button" data-en="Connect Wallet" data-zh="连接钱包">
+                        <span class="button-text">连接钱包</span>
+                        <span class="button-icon">🔗</span>
+                    </button>
                 </div>
+
+
 
                 <!-- 
                 ========================================
@@ -154,7 +404,60 @@ Xwawa 抽奖系统页面
                 ========================================
                 -->
                 <div class="lottery-wheel-container">
-                    <div class="lottery-wheel">
+                    <!-- 魔法师Xwawa -->
+                    <div class="magic-wawa-container">
+                        <div class="magic-wawa" id="magic-wawa">
+                            <!-- Xwawa身体 -->
+                            <div class="wawa-body">
+                                <!-- 魔法帽 -->
+                                <div class="magic-hat">
+                                    <div class="hat-base"></div>
+                                    <div class="hat-star">⭐</div>
+                                </div>
+                                <!-- 青蛙头部 -->
+                                <div class="wawa-head">
+                                    <div class="wawa-eyes">
+                                        <div class="eye left-eye"></div>
+                                        <div class="eye right-eye"></div>
+                                    </div>
+                                    <div class="wawa-mouth"></div>
+                                </div>
+                                <!-- 青蛙身体 -->
+                                <div class="wawa-torso"></div>
+                                <!-- 青蛙手臂 -->
+                                <div class="wawa-arms">
+                                    <!-- 左手臂 -->
+                                    <div class="wawa-arm left-arm">
+                                        <div class="upper-arm"></div>
+                                        <div class="lower-arm"></div>
+                                        <div class="hand"></div>
+                                    </div>
+                                    <!-- 右手臂（持魔法棒） -->
+                                    <div class="wawa-arm right-arm" id="magic-arm">
+                                        <div class="upper-arm"></div>
+                                        <div class="lower-arm"></div>
+                                        <div class="hand">
+                                            <!-- 魔法棒 -->
+                                            <div class="magic-wand" id="magic-wand">
+                                                <div class="wand-handle"></div>
+                                                <div class="wand-tip">
+                                                    <div class="wand-star">✨</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 魔法粒子效果 -->
+                            <div class="magic-particles" id="magic-particles"></div>
+                        </div>
+                        <!-- 魔法咒语文字 -->
+                        <div class="magic-spell" id="magic-spell">
+                            <span data-en="Abracadabra!" data-zh="阿布拉卡达布拉！">Abracadabra!</span>
+                        </div>
+                    </div>
+
+                    <div class="lottery-wheel" id="lottery-wheel">
                         <div class="wheel-inner">
                             <!-- 转盘奖项 - 每个扇形60度 -->
                             <div class="prize-section" data-prize="first-prize">
@@ -178,6 +481,8 @@ Xwawa 抽奖系统页面
                         </div>
                         <!-- 转盘指针 - 固定位置，转盘旋转 -->
                         <div class="wheel-pointer"></div>
+                        <!-- 魔法光环效果 -->
+                        <div class="magic-aura" id="magic-aura"></div>
                     </div>
                 </div>
 
@@ -208,18 +513,9 @@ Xwawa 抽奖系统页面
                     <!-- 单次抽奖费用显示 -->
                     <div class="draw-cost">
                         <span data-en="Cost per draw:" data-zh="每次抽奖花费:">Cost per draw:</span>
-                        <span id="cost-amount">10,000 XWAWA</span>
+                        <span class="cost-amount">10,000 XWAWA</span>
                     </div>
                     
-                    <!-- 抽奖次数控制 -->
-                    <div class="draw-times">
-                        <label for="draw-times-input" data-en="Number of draws:" data-zh="抽奖次数:">Number of draws:</label>
-                        <div class="times-control">
-                            <button id="draw-times-minus" class="times-btn">-</button>
-                            <input type="number" id="draw-times-input" min="1" max="10" value="1">
-                            <button id="draw-times-plus" class="times-btn">+</button>
-                        </div>
-                    </div>
                     
                     <!-- 总费用计算显示 -->
                     <div class="total-cost">
@@ -318,7 +614,7 @@ Xwawa 抽奖系统页面
                     <!-- 双倍奖说明 -->
                     <div class="prize-info-card">
                         <h3 data-en="Double Bonus" data-zh="双倍奖">Double Bonus</h3>
-                        <p data-en="Get double your draw cost back (minus fee)!" data-zh="获得双倍抽奖费用返还（减去手续费）！">Get double your draw cost back (minus fee)!</p>
+                        <p data-en="Receive 2x of this draw cost in XWAWA, claimable now." data-zh="本次获得中奖成本的双倍XWAWA币奖励，可以领取">Receive 2x of this draw cost in XWAWA, claimable now.</p>
                     </div>
                 </div>
             </div>
@@ -365,14 +661,17 @@ Xwawa 抽奖系统页面
     <div id="result-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h2 id="result-title" class="result-title" data-en="Congratulations!" data-zh="恭喜您！">Congratulations!</h2>
+            <h2 class="result-title" data-en="Congratulations!" data-zh="恭喜您！">Congratulations!</h2>
             <div class="result-details">
                 <!-- 结果图标 - 根据奖项动态设置 -->
                 <div id="result-icon" class="result-icon"></div>
                 <!-- 结果消息 - 动态生成 -->
                 <p id="result-message" class="result-message"></p>
             </div>
-            <button id="close-result" class="close-result-btn" data-en="Continue" data-zh="继续">Continue</button>
+            <div class="modal-actions">
+                <button id="claim-result" class="claim-result-btn" data-en="Claim Reward" data-zh="领取奖励">领取奖励</button>
+                <button id="close-result" class="close-result-btn" data-en="Continue" data-zh="继续">继续</button>
+            </div>
         </div>
     </div>
 
@@ -409,10 +708,211 @@ Xwawa 抽奖系统页面
     3. 第三方库 (Web3.js, Ethers.js)
     ========================================
     -->
+    <!-- 基础脚本 -->
     <script src="js/script.js"></script>
+    
+    <!-- Web3 库 -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.5.4/dist/ethers.umd.min.js"></script>
+    
+    <!-- Web3Modal 依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.0/dist/index.js"></script>
+    
+    <!-- 项目脚本 -->
     <script src="js/web3-connector.js"></script>
+    <script src="js/web3modal-config.js"></script>
+    <script src="js/wallet-manager.js"></script>
     <script src="js/lottery.js"></script>
+    
+    <!-- 初始化 Web3Modal -->
+    <script>
+        // 全局 Web3Modal 管理器实例
+        let web3ModalManager;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 Web3Modal 管理器
+            web3ModalManager = new Web3ModalManager();
+            window.web3ModalManager = web3ModalManager;
+            
+            // 设置事件回调
+            web3ModalManager.onWalletConnected = function() {
+                console.log('钱包连接成功');
+                updateWalletUI();
+            };
+            
+            web3ModalManager.onWalletDisconnected = function() {
+                console.log('钱包已断开');
+                updateWalletUI();
+            };
+            
+            web3ModalManager.onAccountChanged = function(account) {
+                console.log('账户已切换:', account);
+                updateWalletUI();
+            };
+            
+            web3ModalManager.onChainChanged = function(chainId) {
+                console.log('网络已切换:', chainId);
+                updateWalletUI();
+            };
+        });
+        
+        // 更新钱包UI状态
+        function updateWalletUI() {
+            const walletStatus = document.getElementById('wallet-status');
+            const statusText = document.querySelector('.status-text');
+            const walletAddress = document.getElementById('wallet-address');
+            const walletBalance = document.getElementById('wallet-balance');
+            const connectBtn = document.getElementById('connect-wallet-btn');
+
+            if (!walletStatus || !statusText || !connectBtn) return;
+
+            if (web3ModalManager && web3ModalManager.isConnected) {
+                // 不要覆盖钱包状态容器内容，仅更新子元素文本与样式
+                walletStatus.className = 'wallet-status connected';
+                statusText.textContent = '钱包已连接';
+
+                if (walletAddress) {
+                    const acc = web3ModalManager.account;
+                    walletAddress.textContent = `${acc.substring(0, 6)}...${acc.substring(acc.length - 4)}`;
+                    walletAddress.style.display = 'inline';
+                }
+
+                if (walletBalance) {
+                    // 余额由 WalletManager/lottery.js 刷新，这里仅确保可见
+                    walletBalance.style.display = 'inline';
+                }
+
+                connectBtn.querySelector('.button-text').textContent = '断开钱包';
+            } else {
+                walletStatus.className = 'wallet-status not-connected';
+                statusText.textContent = '钱包未连接';
+
+                if (walletAddress) {
+                    walletAddress.style.display = 'none';
+                }
+                if (walletBalance) {
+                    walletBalance.style.display = 'none';
+                }
+
+                connectBtn.querySelector('.button-text').textContent = '连接钱包';
+            }
+        }
+    </script>
+
+    <!-- 连接钱包方式选择弹窗 -->
+    <style>
+        .connect-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .connect-modal-open { overflow: hidden; }
+        .connect-modal .connect-modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+        .connect-modal .connect-modal-content { position: relative; background: #141414; color: #fff; border-radius: 12px; width: 360px; max-width: 90vw; box-shadow: 0 12px 32px rgba(0,0,0,0.4); border: 1px solid #2a2a2a; }
+        .connect-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #2a2a2a; font-weight: 600; }
+        .connect-modal-close { background: transparent; border: none; color: #bbb; font-size: 18px; cursor: pointer; }
+        .connect-modal-body { padding: 16px; }
+        .connect-option { width: 100%; padding: 12px 14px; margin: 8px 0; border-radius: 10px; border: 1px solid #2a2a2a; background: #1b1b1b; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .connect-option:hover { background: #222; border-color: #3a3a3a; }
+        .connect-modal-tips { margin-top: 8px; font-size: 12px; color: #8a8a8a; text-align: center; }
+    </style>
+    <!-- 收货信息弹窗 -->
+    <div id="shipping-modal" class="modal" style="display: none;">
+        <div id="shipping-overlay" class="modal-overlay"></div>
+        <div class="modal-content shipping-modal-content">
+            <div class="modal-header">
+                <h3 id="shippingModalTitle">填写收货信息</h3>
+                <span id="shipping-close" class="close-modal">&times;</span>
+            </div>
+            <form id="shipping-form" class="shipping-form">
+                <div class="form-group">
+                    <label for="shipping-email">邮箱地址 *</label>
+                    <input type="email" id="shipping-email" required placeholder="请输入邮箱地址">
+                </div>
+                <div class="form-group">
+                    <label for="shipping-name">收货人姓名</label>
+                    <input type="text" id="shipping-name" placeholder="请输入收货人姓名">
+                </div>
+                <div class="form-group">
+                    <label for="shipping-phone">联系电话</label>
+                    <input type="tel" id="shipping-phone" placeholder="请输入联系电话">
+                </div>
+                <div class="form-group">
+                    <label for="shipping-address">收货地址 *</label>
+                    <textarea id="shipping-address" required placeholder="请输入详细收货地址" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="shipping-cancel" class="btn btn-secondary">取消</button>
+                    <button type="submit" id="shipping-submit" class="btn btn-primary">提交信息</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 中奖详情弹窗 -->
+    <div id="prize-detail-modal" class="modal" style="display: none;">
+        <div id="prize-detail-overlay" class="modal-overlay"></div>
+        <div class="modal-content prize-detail-modal-content">
+            <div class="modal-header">
+                <h3 id="prizeDetailModalTitle" data-lang-zh="中奖详情" data-lang-en="Prize Details">中奖详情</h3>
+                <span id="prize-detail-close" class="close-modal">&times;</span>
+            </div>
+            <div class="prize-detail-content">
+                <div class="detail-item">
+                    <label data-lang-zh="奖项:" data-lang-en="Prize:">奖项:</label>
+                    <span id="detail-prize-name"></span>
+                </div>
+                <div class="detail-item">
+                    <label data-lang-zh="中奖时间:" data-lang-en="Win Time:">中奖时间:</label>
+                    <span id="detail-draw-time"></span>
+                </div>
+                <div class="detail-item">
+                    <label data-lang-zh="钱包地址:" data-lang-en="Wallet Address:">钱包地址:</label>
+                    <span id="detail-wallet-address"></span>
+                </div>
+                <div class="detail-item">
+                    <label data-lang-zh="领取状态:" data-lang-en="Claim Status:">领取状态:</label>
+                    <span id="detail-claim-status"></span>
+                </div>
+                <div class="detail-item" id="detail-email-section">
+                    <label for="detail-email" data-lang-zh="邮箱地址:" data-lang-en="Email Address:">邮箱地址:</label>
+                    <input type="email" id="detail-email" data-lang-zh="请输入邮箱地址" data-lang-en="Please enter email address" placeholder="请输入邮箱地址">
+                    <button type="button" id="update-email-btn" class="btn btn-small" data-lang-zh="更新邮箱" data-lang-en="Update Email">更新邮箱</button>
+                </div>
+                <div class="detail-actions">
+                    <button type="button" id="prize-detail-cancel" class="btn btn-secondary" data-lang-zh="关闭" data-lang-en="Close">关闭</button>
+                    <button type="button" id="claim-prize-btn" class="btn btn-primary" style="display: none;" data-lang-zh="领取奖励" data-lang-en="Claim Prize">领取奖励</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="connect-wallet-modal" class="connect-modal" aria-hidden="true">
+        <div class="connect-modal-overlay connect-modal-close" aria-label="close"></div>
+        <div class="connect-modal-content" role="dialog" aria-modal="true" aria-labelledby="connectModalTitle">
+            <div class="connect-modal-header">
+                <span id="connectModalTitle" data-en="Select Connection Method" data-zh="选择连接方式">选择连接方式</span>
+                <button class="connect-modal-close" data-en="Close" data-zh="关闭" title="关闭">×</button>
+            </div>
+            <div class="connect-modal-body">
+                <div id="deeplink-section" style="display:none;">
+                    <div class="connect-section-title" data-en="Mobile Wallet App Direct Connection (Recommended)" data-zh="手机钱包 App 直连（推荐）">手机钱包 App 直连（推荐）</div>
+                    <div class="connect-modal-tips" data-en="Only displayed in mobile portrait mode. Click to open the corresponding wallet app and initiate a WalletConnect connection request." data-zh="仅在手机竖屏模式显示。点击将打开对应钱包App并发起 WalletConnect 连接请求。">仅在手机竖屏模式显示。点击将打开对应钱包App并发起 WalletConnect 连接请求。</div>
+                    <button id="deeplink-metamask-btn" class="connect-option" data-en="Open and Connect with MetaMask" data-zh="使用 MetaMask 打开并连接">使用 MetaMask 打开并连接</button>
+                    <button id="deeplink-okx-btn" class="connect-option" data-en="Open and Connect with OKX Wallet" data-zh="使用 OKX Wallet 打开并连接">使用 OKX Wallet 打开并连接</button>
+                    <button id="deeplink-tokenpocket-btn" class="connect-option" data-en="Open and Connect with TokenPocket" data-zh="使用 TokenPocket 打开并连接">使用 TokenPocket 打开并连接</button>
+                    <button id="deeplink-trust-btn" class="connect-option" data-en="Open and Connect with Trust Wallet" data-zh="使用 Trust Wallet 打开并连接">使用 Trust Wallet 打开并连接</button>
+                </div>
+
+                <div class="connect-section-title" data-en="Installed Wallets" data-zh="已安装的钱包">已安装的钱包</div>
+                <div id="installed-wallet-list" class="connect-list"></div>
+
+                <div class="connect-section-title" data-en="Other Wallets (QR Code)" data-zh="其他钱包（扫码）">其他钱包（扫码）</div>
+                <button id="scan-connect-btn" class="connect-option" data-en="QR Code Connection" data-zh="二维码扫码连接">二维码扫码连接</button>
+                <div class="connect-modal-tips" data-en="Supports OKX, MetaMask, TokenPocket, Trust, Rainbow and other wallets for QR code login" data-zh="支持欧意、MetaMask、TokenPocket、Trust、Rainbow 等钱包扫码登录">支持欧意、MetaMask、TokenPocket、Trust、Rainbow 等钱包扫码登录</div>
+
+                <div class="connect-section-title" data-en="Universal Method" data-zh="通用方式">通用方式</div>
+                <button id="injected-connect-btn" class="connect-option" data-en="Connect Browser Wallet (Auto-detect Injection)" data-zh="连接浏览器钱包（自动检测注入）">连接浏览器钱包（自动检测注入）</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -98,7 +98,623 @@
     height: auto;
     display: block;
     border-radius: 12px;
+}
+
+/* 魔法师Xwawa样式 */
+.lottery-wheel-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    margin: 40px 0;
+    position: relative;
+}
+
+.magic-wawa-container {
+    position: absolute;
+    left: -50px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.magic-wawa {
+    position: relative;
+    width: 120px;
+    height: 150px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.wawa-body {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* 魔法帽 */
+.magic-hat {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 40px;
+    z-index: 5;
+}
+
+.hat-base {
+    width: 100%;
+    height: 30px;
+    background: linear-gradient(135deg, #4a0e4e, #2d1b69);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hat-base::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: -10px;
+    right: -10px;
+    height: 8px;
+    background: linear-gradient(135deg, #5a1e5e, #3d2b79);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.hat-star {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+    font-size: 16px;
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+/* 青蛙头部 */
+.wawa-head {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 60px;
+    background: linear-gradient(135deg, #4cd964, #2ca745);
+    border-radius: 50% 50% 45% 45%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.wawa-eyes {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 20px;
+}
+
+.eye {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 0;
+}
+
+.left-eye {
+    left: 8px;
+}
+
+.right-eye {
+    right: 8px;
+}
+
+.eye::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 8px;
+    height: 8px;
+    background: #333;
+    border-radius: 50%;
+    animation: blink 4s ease-in-out infinite;
+}
+
+.wawa-mouth {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 8px;
+    background: #2ca745;
+    border-radius: 0 0 50% 50%;
+    box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 青蛙身体 */
+.wawa-torso {
+    position: absolute;
+    top: 65px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 50px;
+    background: linear-gradient(135deg, #4cd964, #2ca745);
+    border-radius: 45% 45% 50% 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 青蛙手臂 */
+.wawa-arms {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 60px;
+}
+
+.wawa-arm {
+    position: absolute;
+    width: 35px;
+    height: 50px;
+}
+
+.left-arm {
+    left: 5px;
+    top: 0;
+}
+
+.right-arm {
+    right: 5px;
+    top: 0;
+    transform-origin: 50% 20%;
+}
+
+.upper-arm {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 25px;
+    background: linear-gradient(135deg, #4cd964, #2ca745);
+    border-radius: 50% 50% 30% 30%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.lower-arm {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 20px;
+    background: linear-gradient(135deg, #4cd964, #2ca745);
+    border-radius: 30% 30% 50% 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.hand {
+    position: absolute;
+    top: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(135deg, #4cd964, #2ca745);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 魔法棒 */
+.magic-wand {
+    position: absolute;
+    top: -5px;
+    left: 8px;
+    width: 45px;
+    height: 6px;
+    transform-origin: 0 center;
+    transform: rotate(-30deg);
+    z-index: 8;
+    transition: transform 0.3s ease;
+}
+
+.wand-handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 35px;
+    height: 6px;
+    background: linear-gradient(90deg, #8B4513, #A0522D);
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.wand-tip {
+    position: absolute;
+    right: -5px;
+    top: -3px;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, #FFD700, #FFA500);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+
+.wand-star {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 8px;
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* 魔法粒子效果 */
+.magic-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* 魔法咒语 */
+.magic-spell {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(76, 217, 100, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
     transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.magic-spell.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* 魔法光环效果 */
+.magic-aura {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 120%;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+.magic-aura.active {
+    opacity: 1;
+    border-color: rgba(76, 217, 100, 0.6);
+    box-shadow: 
+        0 0 20px rgba(76, 217, 100, 0.4),
+        inset 0 0 20px rgba(76, 217, 100, 0.2);
+    animation: pulse-aura 2s ease-in-out infinite;
+}
+
+/* 动画效果 */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+    }
+}
+
+@keyframes blink {
+    0%, 90%, 100% {
+        opacity: 1;
+    }
+    95% {
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-aura {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* 魔法棒挥动动画 */
+.magic-wand.casting {
+    animation: wand-wave 1s ease-in-out;
+}
+
+@keyframes wand-wave {
+    0% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(-30deg);
+    }
+    50% {
+        transform: rotate(15deg);
+    }
+    75% {
+        transform: rotate(-10deg);
+    }
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+/* 魔法粒子爆发效果 */
+.magic-burst-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1000;
+    transition: all 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 0 10px currentColor;
+}
+
+/* 魔法师施法状态 */
+.magic-wizard.casting {
+    animation: casting-glow 2s ease-in-out;
+}
+
+@keyframes casting-glow {
+    0%, 100% { 
+        filter: drop-shadow(0 0 5px #FFD700); 
+    }
+    50% { 
+        filter: drop-shadow(0 0 20px #FFD700) drop-shadow(0 0 30px #FF69B4); 
+        transform: scale(1.1);
+    }
+}
+
+/* 手臂挥动动画 */
+.right-arm.casting {
+    animation: arm-wave 2s ease-in-out;
+}
+
+@keyframes arm-wave {
+    0% { 
+        transform: rotate(0deg);
+    }
+    25% { 
+        transform: rotate(-30deg);
+    }
+    50% { 
+        transform: rotate(15deg);
+    }
+    75% { 
+        transform: rotate(-20deg);
+    }
+    100% { 
+        transform: rotate(0deg);
+    }
+}
+
+/* 魔法棒挥动增强效果 */
+.magic-wand.waving {
+    animation: wand-wave-enhanced 2s ease-in-out;
+}
+
+@keyframes wand-wave-enhanced {
+    0% { 
+        transform: rotate(-30deg); 
+        filter: drop-shadow(0 0 5px #FFD700);
+    }
+    25% { 
+        transform: rotate(-60deg); 
+        filter: drop-shadow(0 0 15px #FF69B4);
+    }
+    50% { 
+        transform: rotate(-15deg); 
+        filter: drop-shadow(0 0 20px #00FFFF);
+    }
+    75% { 
+        transform: rotate(-45deg); 
+        filter: drop-shadow(0 0 15px #FF6347);
+    }
+    100% { 
+        transform: rotate(-30deg); 
+        filter: drop-shadow(0 0 5px #FFD700);
+    }
+}
+
+/* 魔法粒子激活状态 */
+.magic-particles.active .particle {
+    animation: particle-burst 2s ease-out;
+}
+
+@keyframes particle-burst {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+    }
+    20% {
+        transform: scale(1.5) rotate(180deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.5) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* 转盘魔法光环激活状态 */
+.wheel-magic-aura.active {
+    animation: aura-pulse-enhanced 3s ease-in-out;
+}
+
+.wheel-magic-aura.spinning-aura {
+    animation: spinning-aura 5s linear infinite;
+}
+
+@keyframes aura-pulse-enhanced {
+    0%, 100% {
+        box-shadow: 
+            0 0 20px #FFD700,
+            0 0 40px #FF69B4,
+            0 0 60px #00FFFF;
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 
+            0 0 40px #FFD700,
+            0 0 80px #FF69B4,
+            0 0 120px #00FFFF,
+            0 0 160px #FF6347;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes spinning-aura {
+    0% {
+        box-shadow: 
+            0 0 30px #FFD700,
+            0 0 60px #FF69B4,
+            0 0 90px #00FFFF;
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        box-shadow: 
+            0 0 50px #FFD700,
+            0 0 100px #FF69B4,
+            0 0 150px #00FFFF,
+            0 0 200px #9370DB;
+        transform: rotate(180deg) scale(1.1);
+    }
+    100% {
+        box-shadow: 
+            0 0 30px #FFD700,
+            0 0 60px #FF69B4,
+            0 0 90px #00FFFF;
+        transform: rotate(360deg) scale(1);
+    }
+}
+
+/* 魔法旋转状态 */
+.lottery-wheel-container.magic-spinning {
+    filter: drop-shadow(0 0 20px #FFD700) drop-shadow(0 0 40px #FF69B4);
+}
+
+.lottery-wheel-container.magic-burst {
+    animation: magic-burst-glow 1s ease-in-out;
+}
+
+@keyframes magic-burst-glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 20px #FFD700) drop-shadow(0 0 40px #FF69B4);
+    }
+    50% {
+        filter: 
+            drop-shadow(0 0 40px #FFD700) 
+            drop-shadow(0 0 80px #FF69B4) 
+            drop-shadow(0 0 120px #00FFFF)
+            drop-shadow(0 0 160px #9370DB);
+        transform: scale(1.02);
+    }
+}
+
+/* 魔法旋转粒子 */
+.spinning-magic-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1000;
+    animation: orbit-spin 5s linear infinite;
+    box-shadow: 0 0 15px currentColor;
+}
+
+@keyframes orbit-spin {
+    0% {
+        transform: rotate(0deg) translateX(150px) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: rotate(360deg) translateX(150px) rotate(-360deg);
+        opacity: 0;
+    }
+}
+
+/* 魔法能量波 */
+.magic-energy-wave {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 3px solid;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999;
+    transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity: 0.8;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .lottery-wheel-container {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .magic-wawa-container {
+        left: -35px;
+    }
+    
+    .magic-wawa {
+        width: 100px;
+        height: 125px;
+    }
+    
+    .magic-wand {
+        right: -25px;
+        width: 50px;
+    }
+    
+    .magic-burst-particle {
+        width: 4px;
+        height: 4px;
+    }
 }
 
 .lottery-hero {
@@ -169,6 +785,133 @@
     background-color: #45a049;
 }
 
+.disconnect-button {
+    padding: 10px 20px;
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.disconnect-button:hover {
+    background-color: #e55555;
+}
+
+.wallet-address {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #4CAF50;
+    margin-left: 10px;
+}
+
+/* 钱包模态框样式 */
+.wallet-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.wallet-modal-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(76, 217, 100, 0.2);
+}
+
+.wallet-modal h3 {
+    text-align: center;
+    color: #4cd964;
+    margin-bottom: 30px;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.wallet-option {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(76, 217, 100, 0.2);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    text-align: left;
+}
+
+.wallet-option:hover {
+    background: rgba(76, 217, 100, 0.1);
+    border-color: rgba(76, 217, 100, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(76, 217, 100, 0.2);
+}
+
+.wallet-option:last-child {
+    margin-bottom: 0;
+}
+
+.wallet-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(76, 217, 100, 0.1);
+    border-radius: 10px;
+}
+
+.wallet-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.wallet-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.wallet-desc {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.close-selection {
+    width: 100%;
+    padding: 12px;
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-selection:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 /* Web3风格抽奖转盘样式 */
 .lottery-wheel-container {
     display: flex;
@@ -224,6 +967,16 @@
     border: 4px solid transparent;
     background-clip: padding-box;
     transition: transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 预旋转动画：在等待合约结果时轻快旋转 */
+.wheel-inner.pre-spin {
+    animation: wheel-pre-spin 1.2s linear infinite;
+}
+
+@keyframes wheel-pre-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .wheel-inner::before {
@@ -461,8 +1214,22 @@
             calc((var(--random-x, 0.5) - 0.5) * 300px),
             calc((var(--random-y, 0.5) - 0.5) * 300px)
         );
-        opacity: 0;
-    }
+    opacity: 0;
+}
+
+/* 结束 @keyframes firework-explosion */
+}
+
+/* 全屏烟花覆盖层 */
+.fireworks-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2000; /* 高于弹窗，且不拦截点击 */
+    overflow: hidden;
 }
 
 /* 转盘悬停效果增强 */
@@ -742,6 +1509,78 @@
     cursor: pointer;
 }
 
+/* 钱包连接消息提示 */
+.wallet-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease-out;
+    max-width: 300px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.wallet-message-success {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.wallet-message-error {
+    background: linear-gradient(135deg, #f44336, #da190b);
+}
+
+.wallet-message-info {
+    background: linear-gradient(135deg, #2196F3, #0b7dda);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* 钱包选项连接中状态 */
+.wallet-option.connecting {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.wallet-option.connecting .wallet-icon {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* 钱包选项禁用状态 */
+.wallet-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.wallet-option.disabled:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: none;
+}
+
 .result-title {
     margin-bottom: 20px;
     color: #b0b0b0;
@@ -828,7 +1667,53 @@
         font-size: 1rem;
     }
     
+    /* 小屏幕设备的魔法师Xwawa定位 */
+    .magic-wawa-container {
+        left: -25px;
+    }
+    
     .art-image-container {
         margin: 0 10px;
     }
+}
+/* 结果列表状态文本更亮，避免与灰背景混在一起 */
+.results-list .result-item .result-status {
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    opacity: 0.98;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* 按状态分别上色 */
+.results-list .result-item .result-status.status-auto {
+    color: #4ECDC4 !important; /* 薄荷绿 */
+    background: rgba(78, 205, 196, 0.12);
+}
+
+.results-list .result-item .result-status.status-none {
+    color: #E74C3C !important; /* 暗红 */
+    background: rgba(231, 76, 60, 0.12);
+}
+
+/* 可选：为状态增加轻微底色提升可读性 */
+.results-list .result-item .result-status {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+/* 如果结果项采用 Flex 布局，确保状态文本靠右显示 */
+.results-list .result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.results-list .result-item .result-name {
+    color: #f1f1f1;
+}
+
+.results-list .result-item .result-value {
+    color: #d8d8d8;
 }

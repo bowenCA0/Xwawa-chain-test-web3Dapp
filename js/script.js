@@ -72,14 +72,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // }
     }
 
-    // 检查并应用保存的语言偏好
-    const savedLanguage = localStorage.getItem('xwawa-language');
-    if (savedLanguage) {
-        if (savedLanguage === 'zh') {
-            zhBtn.click();
-        } else {
-            enBtn.click();
-        }
+    // 检查并应用保存的语言偏好，默认为英语
+    const savedLanguage = localStorage.getItem('xwawa-language') || 'en';
+    if (savedLanguage === 'zh') {
+        zhBtn.click();
+    } else {
+        enBtn.click();
     }
 
     /**
@@ -193,8 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const carousel = document.querySelector('.art-carousel-slides');
     const slides = document.querySelectorAll('.art-slide');
     const indicators = document.querySelectorAll('.art-indicator');
-    const prevBtn = document.querySelector('.art-prev-btn');
-    const nextBtn = document.querySelector('.art-next-btn');
+    const prevBtn = document.querySelector('.art-carousel-btn.art-prev-btn');
+    const nextBtn = document.querySelector('.art-carousel-btn.art-next-btn');
     
     if (carousel && slides.length > 0) {
         let currentSlide = 0;
@@ -285,10 +283,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /**
      * 实时价格更新系统
-     * 功能: 每30秒更新XWAWA代币和比特币价格
-     * 数据来源: 
-     * - XWAWA代币: 模拟API (实际项目中需要连接真实的DEX API)
-     * - 比特币: OKX API
+     * 功能: 每30秒更新XWAWA、BTC、OKB价格
+     * 数据来源:
+     * - XWAWA: DexScreener API（按代币地址聚合）
+     * - BTC、OKB: OKX API
      */
     
     // 价格数据缓存
@@ -311,35 +309,74 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     /**
-     * 获取XWAWA代币价格 (模拟数据)
-     * 实际项目中需要连接到DEX API或代币交易所API
+     * 获取XWAWA代币价格（DexScreener 实时数据）
+     * 依据合约地址选择流动性最高的交易对，读取 `priceUsd` 与 24h 涨跌幅
      */
     async function fetchXwawaPrice() {
         try {
-            // 模拟API调用 - 实际项目中替换为真实API
-            // 例如: const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/YOUR_TOKEN_ADDRESS');
-            
-            // 模拟价格波动
-            const basePrice = 0.0234; // 基础价格
-            const volatility = 0.1; // 10% 波动率
-            const randomChange = (Math.random() - 0.5) * volatility;
-            const currentPrice = basePrice * (1 + randomChange);
-            
-            // 模拟24小时变化
-            const change24h = (Math.random() - 0.5) * 20; // -10% 到 +10%
-            
+            // 使用用户提供的 XWAWA 合约地址，仅用于首页价格显示
+            const tokenAddress = '0x095c1a875b985be6e2c86b2cae0b66a3df702e6a';
+            // 优先使用 DexScreener 搜索端点，找不到再回退到 tokens 端点
+            async function getBestPairByDexScreener(addr) {
+                const endpoints = [
+                    `https://api.dexscreener.com/latest/dex/search?q=${0x095c1a875b985be6e2c86b2cae0b66a3df702e6a}`,
+                    `https://api.dexscreener.com/latest/dex/tokens/${0x095c1a875b985be6e2c86b2cae0b66a3df702e6a}`
+                ];
+
+                let pairs = [];
+                for (const url of endpoints) {
+                    try {
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        const candidate = Array.isArray(data.pairs) ? data.pairs : [];
+                        if (candidate.length > 0) {
+                            pairs = candidate;
+                            break;
+                        }
+                    } catch (e) {
+                        console.warn('DexScreener 请求失败，尝试下一个端点:', url, e);
+                    }
+                }
+
+                if (!pairs.length) return null;
+                return pairs.reduce((best, cur) => {
+                    const bestLiq = (best && best.liquidity && best.liquidity.usd) ? best.liquidity.usd : 0;
+                    const curLiq = (cur && cur.liquidity && cur.liquidity.usd) ? cur.liquidity.usd : 0;
+                    return curLiq > bestLiq ? cur : best;
+                });
+            }
+
+            const bestPair = await getBestPairByDexScreener(tokenAddress);
+            if (!bestPair) {
+                console.warn('DexScreener 暂无交易对数据，保留上次有效价格', tokenAddress);
+                return priceData.xwawa && priceData.xwawa.lastUpdate ? priceData.xwawa : null;
+            }
+
+            const currentPrice = parseFloat(bestPair.priceUsd);
+            // DexScreener 的 24h 涨跌幅字段可能是 priceChange.h24 或 priceChange24h
+            let change24h = 0;
+            if (bestPair.priceChange && typeof bestPair.priceChange.h24 !== 'undefined') {
+                change24h = parseFloat(bestPair.priceChange.h24);
+            } else if (typeof bestPair.priceChange24h !== 'undefined') {
+                change24h = parseFloat(bestPair.priceChange24h);
+            } else {
+                // 无明确字段时尝试根据 openPrice 近似计算（若存在）
+                const open = parseFloat(bestPair.openPrice || '0');
+                change24h = open > 0 ? ((currentPrice - open) / open) * 100 : 0;
+            }
+
             priceData.xwawa = {
-                price: currentPrice,
-                change24h: change24h,
+                price: isNaN(currentPrice) ? 0 : currentPrice,
+                change24h: isNaN(change24h) ? 0 : change24h,
                 lastUpdate: new Date()
             };
-            
+
             console.log('XWAWA价格更新:', priceData.xwawa);
             return priceData.xwawa;
-            
         } catch (error) {
             console.error('获取XWAWA价格失败:', error);
-            return null;
+            // 回退：保留上次有效数据，避免界面显示为 NaN
+            return priceData.xwawa && priceData.xwawa.lastUpdate ? priceData.xwawa : null;
         }
     }
 
@@ -349,44 +386,29 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     async function fetchBitcoinPrice() {
         try {
-            // 使用OKX公开API
             const response = await fetch('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT');
             const data = await response.json();
-            
+
             if (data.code === '0' && data.data && data.data.length > 0) {
                 const ticker = data.data[0];
                 const currentPrice = parseFloat(ticker.last);
-                const change24h = parseFloat(ticker.changePercent) * 100;
-                
+                const open24h = parseFloat(ticker.open24h || '0');
+                const change24h = open24h > 0 ? ((currentPrice - open24h) / open24h) * 100 : 0;
+
                 priceData.bitcoin = {
-                    price: currentPrice,
-                    change24h: change24h,
+                    price: isNaN(currentPrice) ? 0 : currentPrice,
+                    change24h: isNaN(change24h) ? 0 : change24h,
                     lastUpdate: new Date()
                 };
-                
+
                 console.log('比特币价格更新:', priceData.bitcoin);
                 return priceData.bitcoin;
             } else {
                 throw new Error('API响应格式错误');
             }
-            
         } catch (error) {
             console.error('获取比特币价格失败:', error);
-            
-            // 备用方案：使用模拟数据
-            const basePrice = 43000; // 基础价格
-            const volatility = 0.05; // 5% 波动率
-            const randomChange = (Math.random() - 0.5) * volatility;
-            const currentPrice = basePrice * (1 + randomChange);
-            const change24h = (Math.random() - 0.5) * 10; // -5% 到 +5%
-            
-            priceData.bitcoin = {
-                price: currentPrice,
-                change24h: change24h,
-                lastUpdate: new Date()
-            };
-            
-            return priceData.bitcoin;
+            return priceData.bitcoin && priceData.bitcoin.lastUpdate ? priceData.bitcoin : null;
         }
     }
 
@@ -396,44 +418,29 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     async function fetchOkbPrice() {
         try {
-            // 使用OKX公开API获取OKB价格
             const response = await fetch('https://www.okx.com/api/v5/market/ticker?instId=OKB-USDT');
             const data = await response.json();
-            
+
             if (data.code === '0' && data.data && data.data.length > 0) {
                 const ticker = data.data[0];
                 const currentPrice = parseFloat(ticker.last);
-                const change24h = parseFloat(ticker.changePercent) * 100;
-                
+                const open24h = parseFloat(ticker.open24h || '0');
+                const change24h = open24h > 0 ? ((currentPrice - open24h) / open24h) * 100 : 0;
+
                 priceData.okb = {
-                    price: currentPrice,
-                    change24h: change24h,
+                    price: isNaN(currentPrice) ? 0 : currentPrice,
+                    change24h: isNaN(change24h) ? 0 : change24h,
                     lastUpdate: new Date()
                 };
-                
+
                 console.log('OKB价格更新:', priceData.okb);
                 return priceData.okb;
             } else {
                 throw new Error('API响应格式错误');
             }
-            
         } catch (error) {
             console.error('获取OKB价格失败:', error);
-            
-            // 备用方案：使用模拟数据
-            const basePrice = 45.50; // OKB基础价格
-            const volatility = 0.08; // 8% 波动率
-            const randomChange = (Math.random() - 0.5) * volatility;
-            const currentPrice = basePrice * (1 + randomChange);
-            const change24h = (Math.random() - 0.5) * 15; // -7.5% 到 +7.5%
-            
-            priceData.okb = {
-                price: currentPrice,
-                change24h: change24h,
-                lastUpdate: new Date()
-            };
-            
-            return priceData.okb;
+            return priceData.okb && priceData.okb.lastUpdate ? priceData.okb : null;
         }
     }
 
@@ -444,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 更新XWAWA价格
         const xwawaPrice = document.getElementById('xwawa-price');
         const xwawaChange = document.getElementById('xwawa-change');
-        const xwawaUpdate = document.getElementById('xwawa-time');
+        const xwawaUpdate = document.getElementById('xwawa-update');
         
         if (xwawaPrice && priceData.xwawa.price > 0) {
             xwawaPrice.textContent = `$${priceData.xwawa.price.toFixed(4)}`;
@@ -456,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (xwawaUpdate) {
-                xwawaUpdate.textContent = priceData.xwawa.lastUpdate.toLocaleTimeString();
+                xwawaUpdate.textContent = `更新时间: ${priceData.xwawa.lastUpdate.toLocaleTimeString()}`;
             }
         }
         

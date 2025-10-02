@@ -66,17 +66,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // if (window.userLoggedIn) {
     //     saveLanguagePreference(lang);
     // }
-  } // 检查并应用保存的语言偏好
+  } // 检查并应用保存的语言偏好，默认为英语
 
 
-  var savedLanguage = localStorage.getItem('xwawa-language');
+  var savedLanguage = localStorage.getItem('xwawa-language') || 'en';
 
-  if (savedLanguage) {
-    if (savedLanguage === 'zh') {
-      zhBtn.click();
-    } else {
-      enBtn.click();
-    }
+  if (savedLanguage === 'zh') {
+    zhBtn.click();
+  } else {
+    enBtn.click();
   }
   /**
    * 移动端菜单系统
@@ -183,8 +181,8 @@ document.addEventListener('DOMContentLoaded', function () {
   var carousel = document.querySelector('.art-carousel-slides');
   var slides = document.querySelectorAll('.art-slide');
   var indicators = document.querySelectorAll('.art-indicator');
-  var prevBtn = document.querySelector('.art-carousel-btn.prev');
-  var nextBtn = document.querySelector('.art-carousel-btn.next');
+  var prevBtn = document.querySelector('.art-carousel-btn.art-prev-btn');
+  var nextBtn = document.querySelector('.art-carousel-btn.art-next-btn');
 
   if (carousel && slides.length > 0) {
     /**
@@ -272,10 +270,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   /**
    * 实时价格更新系统
-   * 功能: 每30秒更新XWAWA代币和比特币价格
-   * 数据来源: 
-   * - XWAWA代币: 模拟API (实际项目中需要连接真实的DEX API)
-   * - 比特币: OKX API
+   * 功能: 每30秒更新XWAWA、BTC、OKB价格
+   * 数据来源:
+   * - XWAWA: DexScreener API（按代币地址聚合）
+   * - BTC、OKB: OKX API
    */
   // 价格数据缓存
 
@@ -298,49 +296,147 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
   /**
-   * 获取XWAWA代币价格 (模拟数据)
-   * 实际项目中需要连接到DEX API或代币交易所API
+   * 获取XWAWA代币价格（DexScreener 实时数据）
+   * 依据合约地址选择流动性最高的交易对，读取 `priceUsd` 与 24h 涨跌幅
    */
 
   function fetchXwawaPrice() {
-    var basePrice, volatility, randomChange, currentPrice, change24h;
-    return regeneratorRuntime.async(function fetchXwawaPrice$(_context) {
+    var getBestPairByDexScreener, tokenAddress, bestPair, currentPrice, change24h, open;
+    return regeneratorRuntime.async(function fetchXwawaPrice$(_context2) {
       while (1) {
-        switch (_context.prev = _context.next) {
+        switch (_context2.prev = _context2.next) {
           case 0:
-            _context.prev = 0;
-            // 模拟API调用 - 实际项目中替换为真实API
-            // 例如: const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/YOUR_TOKEN_ADDRESS');
-            // 模拟价格波动
-            basePrice = 0.0234; // 基础价格
+            _context2.prev = 0;
 
-            volatility = 0.1; // 10% 波动率
+            // 优先使用 DexScreener 搜索端点，找不到再回退到 tokens 端点
+            getBestPairByDexScreener = function getBestPairByDexScreener(addr) {
+              var endpoints, pairs, _i, _endpoints, url, res, data, candidate;
 
-            randomChange = (Math.random() - 0.5) * volatility;
-            currentPrice = basePrice * (1 + randomChange); // 模拟24小时变化
+              return regeneratorRuntime.async(function getBestPairByDexScreener$(_context) {
+                while (1) {
+                  switch (_context.prev = _context.next) {
+                    case 0:
+                      endpoints = ["https://api.dexscreener.com/latest/dex/search?q=".concat(0x095c1a875b985be6e2c86b2cae0b66a3df702e6a), "https://api.dexscreener.com/latest/dex/tokens/".concat(0x095c1a875b985be6e2c86b2cae0b66a3df702e6a)];
+                      pairs = [];
+                      _i = 0, _endpoints = endpoints;
 
-            change24h = (Math.random() - 0.5) * 20; // -10% 到 +10%
+                    case 3:
+                      if (!(_i < _endpoints.length)) {
+                        _context.next = 24;
+                        break;
+                      }
+
+                      url = _endpoints[_i];
+                      _context.prev = 5;
+                      _context.next = 8;
+                      return regeneratorRuntime.awrap(fetch(url));
+
+                    case 8:
+                      res = _context.sent;
+                      _context.next = 11;
+                      return regeneratorRuntime.awrap(res.json());
+
+                    case 11:
+                      data = _context.sent;
+                      candidate = Array.isArray(data.pairs) ? data.pairs : [];
+
+                      if (!(candidate.length > 0)) {
+                        _context.next = 16;
+                        break;
+                      }
+
+                      pairs = candidate;
+                      return _context.abrupt("break", 24);
+
+                    case 16:
+                      _context.next = 21;
+                      break;
+
+                    case 18:
+                      _context.prev = 18;
+                      _context.t0 = _context["catch"](5);
+                      console.warn('DexScreener 请求失败，尝试下一个端点:', url, _context.t0);
+
+                    case 21:
+                      _i++;
+                      _context.next = 3;
+                      break;
+
+                    case 24:
+                      if (pairs.length) {
+                        _context.next = 26;
+                        break;
+                      }
+
+                      return _context.abrupt("return", null);
+
+                    case 26:
+                      return _context.abrupt("return", pairs.reduce(function (best, cur) {
+                        var bestLiq = best && best.liquidity && best.liquidity.usd ? best.liquidity.usd : 0;
+                        var curLiq = cur && cur.liquidity && cur.liquidity.usd ? cur.liquidity.usd : 0;
+                        return curLiq > bestLiq ? cur : best;
+                      }));
+
+                    case 27:
+                    case "end":
+                      return _context.stop();
+                  }
+                }
+              }, null, null, [[5, 18]]);
+            };
+
+            // 使用用户提供的 XWAWA 合约地址，仅用于首页价格显示
+            tokenAddress = '0x095c1a875b985be6e2c86b2cae0b66a3df702e6a';
+            _context2.next = 5;
+            return regeneratorRuntime.awrap(getBestPairByDexScreener(tokenAddress));
+
+          case 5:
+            bestPair = _context2.sent;
+
+            if (bestPair) {
+              _context2.next = 9;
+              break;
+            }
+
+            console.warn('DexScreener 暂无交易对数据，保留上次有效价格', tokenAddress);
+            return _context2.abrupt("return", priceData.xwawa && priceData.xwawa.lastUpdate ? priceData.xwawa : null);
+
+          case 9:
+            currentPrice = parseFloat(bestPair.priceUsd); // DexScreener 的 24h 涨跌幅字段可能是 priceChange.h24 或 priceChange24h
+
+            change24h = 0;
+
+            if (bestPair.priceChange && typeof bestPair.priceChange.h24 !== 'undefined') {
+              change24h = parseFloat(bestPair.priceChange.h24);
+            } else if (typeof bestPair.priceChange24h !== 'undefined') {
+              change24h = parseFloat(bestPair.priceChange24h);
+            } else {
+              // 无明确字段时尝试根据 openPrice 近似计算（若存在）
+              open = parseFloat(bestPair.openPrice || '0');
+              change24h = open > 0 ? (currentPrice - open) / open * 100 : 0;
+            }
 
             priceData.xwawa = {
-              price: currentPrice,
-              change24h: change24h,
+              price: isNaN(currentPrice) ? 0 : currentPrice,
+              change24h: isNaN(change24h) ? 0 : change24h,
               lastUpdate: new Date()
             };
             console.log('XWAWA价格更新:', priceData.xwawa);
-            return _context.abrupt("return", priceData.xwawa);
+            return _context2.abrupt("return", priceData.xwawa);
 
-          case 11:
-            _context.prev = 11;
-            _context.t0 = _context["catch"](0);
-            console.error('获取XWAWA价格失败:', _context.t0);
-            return _context.abrupt("return", null);
+          case 17:
+            _context2.prev = 17;
+            _context2.t0 = _context2["catch"](0);
+            console.error('获取XWAWA价格失败:', _context2.t0); // 回退：保留上次有效数据，避免界面显示为 NaN
 
-          case 15:
+            return _context2.abrupt("return", priceData.xwawa && priceData.xwawa.lastUpdate ? priceData.xwawa : null);
+
+          case 21:
           case "end":
-            return _context.stop();
+            return _context2.stop();
         }
       }
-    }, null, null, [[0, 11]]);
+    }, null, null, [[0, 17]]);
   }
   /**
    * 获取比特币价格 (OKX API)
@@ -349,90 +445,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
   function fetchBitcoinPrice() {
-    var response, data, ticker, currentPrice, change24h, basePrice, volatility, randomChange, _currentPrice, _change24h;
-
-    return regeneratorRuntime.async(function fetchBitcoinPrice$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            _context2.prev = 0;
-            _context2.next = 3;
-            return regeneratorRuntime.awrap(fetch('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT'));
-
-          case 3:
-            response = _context2.sent;
-            _context2.next = 6;
-            return regeneratorRuntime.awrap(response.json());
-
-          case 6:
-            data = _context2.sent;
-
-            if (!(data.code === '0' && data.data && data.data.length > 0)) {
-              _context2.next = 16;
-              break;
-            }
-
-            ticker = data.data[0];
-            currentPrice = parseFloat(ticker.last);
-            change24h = parseFloat(ticker.changePercent) * 100;
-            priceData.bitcoin = {
-              price: currentPrice,
-              change24h: change24h,
-              lastUpdate: new Date()
-            };
-            console.log('比特币价格更新:', priceData.bitcoin);
-            return _context2.abrupt("return", priceData.bitcoin);
-
-          case 16:
-            throw new Error('API响应格式错误');
-
-          case 17:
-            _context2.next = 29;
-            break;
-
-          case 19:
-            _context2.prev = 19;
-            _context2.t0 = _context2["catch"](0);
-            console.error('获取比特币价格失败:', _context2.t0); // 备用方案：使用模拟数据
-
-            basePrice = 43000; // 基础价格
-
-            volatility = 0.05; // 5% 波动率
-
-            randomChange = (Math.random() - 0.5) * volatility;
-            _currentPrice = basePrice * (1 + randomChange);
-            _change24h = (Math.random() - 0.5) * 10; // -5% 到 +5%
-
-            priceData.bitcoin = {
-              price: _currentPrice,
-              change24h: _change24h,
-              lastUpdate: new Date()
-            };
-            return _context2.abrupt("return", priceData.bitcoin);
-
-          case 29:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, null, null, [[0, 19]]);
-  }
-  /**
-   * 获取OKB代币价格 (OKX API)
-   * 使用OKX公开API获取OKB价格
-   */
-
-
-  function fetchOkbPrice() {
-    var response, data, ticker, currentPrice, change24h, basePrice, volatility, randomChange, _currentPrice2, _change24h2;
-
-    return regeneratorRuntime.async(function fetchOkbPrice$(_context3) {
+    var response, data, ticker, currentPrice, open24h, change24h;
+    return regeneratorRuntime.async(function fetchBitcoinPrice$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
             _context3.prev = 0;
             _context3.next = 3;
-            return regeneratorRuntime.awrap(fetch('https://www.okx.com/api/v5/market/ticker?instId=OKB-USDT'));
+            return regeneratorRuntime.awrap(fetch('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT'));
 
           case 3:
             response = _context3.sent;
@@ -443,54 +463,102 @@ document.addEventListener('DOMContentLoaded', function () {
             data = _context3.sent;
 
             if (!(data.code === '0' && data.data && data.data.length > 0)) {
-              _context3.next = 16;
+              _context3.next = 17;
               break;
             }
 
             ticker = data.data[0];
             currentPrice = parseFloat(ticker.last);
-            change24h = parseFloat(ticker.changePercent) * 100;
-            priceData.okb = {
-              price: currentPrice,
-              change24h: change24h,
+            open24h = parseFloat(ticker.open24h || '0');
+            change24h = open24h > 0 ? (currentPrice - open24h) / open24h * 100 : 0;
+            priceData.bitcoin = {
+              price: isNaN(currentPrice) ? 0 : currentPrice,
+              change24h: isNaN(change24h) ? 0 : change24h,
               lastUpdate: new Date()
             };
-            console.log('OKB价格更新:', priceData.okb);
-            return _context3.abrupt("return", priceData.okb);
-
-          case 16:
-            throw new Error('API响应格式错误');
+            console.log('比特币价格更新:', priceData.bitcoin);
+            return _context3.abrupt("return", priceData.bitcoin);
 
           case 17:
-            _context3.next = 29;
+            throw new Error('API响应格式错误');
+
+          case 18:
+            _context3.next = 24;
             break;
 
-          case 19:
-            _context3.prev = 19;
+          case 20:
+            _context3.prev = 20;
             _context3.t0 = _context3["catch"](0);
-            console.error('获取OKB价格失败:', _context3.t0); // 备用方案：使用模拟数据
+            console.error('获取比特币价格失败:', _context3.t0);
+            return _context3.abrupt("return", priceData.bitcoin && priceData.bitcoin.lastUpdate ? priceData.bitcoin : null);
 
-            basePrice = 45.50; // OKB基础价格
-
-            volatility = 0.08; // 8% 波动率
-
-            randomChange = (Math.random() - 0.5) * volatility;
-            _currentPrice2 = basePrice * (1 + randomChange);
-            _change24h2 = (Math.random() - 0.5) * 15; // -7.5% 到 +7.5%
-
-            priceData.okb = {
-              price: _currentPrice2,
-              change24h: _change24h2,
-              lastUpdate: new Date()
-            };
-            return _context3.abrupt("return", priceData.okb);
-
-          case 29:
+          case 24:
           case "end":
             return _context3.stop();
         }
       }
-    }, null, null, [[0, 19]]);
+    }, null, null, [[0, 20]]);
+  }
+  /**
+   * 获取OKB代币价格 (OKX API)
+   * 使用OKX公开API获取OKB价格
+   */
+
+
+  function fetchOkbPrice() {
+    var response, data, ticker, currentPrice, open24h, change24h;
+    return regeneratorRuntime.async(function fetchOkbPrice$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            _context4.prev = 0;
+            _context4.next = 3;
+            return regeneratorRuntime.awrap(fetch('https://www.okx.com/api/v5/market/ticker?instId=OKB-USDT'));
+
+          case 3:
+            response = _context4.sent;
+            _context4.next = 6;
+            return regeneratorRuntime.awrap(response.json());
+
+          case 6:
+            data = _context4.sent;
+
+            if (!(data.code === '0' && data.data && data.data.length > 0)) {
+              _context4.next = 17;
+              break;
+            }
+
+            ticker = data.data[0];
+            currentPrice = parseFloat(ticker.last);
+            open24h = parseFloat(ticker.open24h || '0');
+            change24h = open24h > 0 ? (currentPrice - open24h) / open24h * 100 : 0;
+            priceData.okb = {
+              price: isNaN(currentPrice) ? 0 : currentPrice,
+              change24h: isNaN(change24h) ? 0 : change24h,
+              lastUpdate: new Date()
+            };
+            console.log('OKB价格更新:', priceData.okb);
+            return _context4.abrupt("return", priceData.okb);
+
+          case 17:
+            throw new Error('API响应格式错误');
+
+          case 18:
+            _context4.next = 24;
+            break;
+
+          case 20:
+            _context4.prev = 20;
+            _context4.t0 = _context4["catch"](0);
+            console.error('获取OKB价格失败:', _context4.t0);
+            return _context4.abrupt("return", priceData.okb && priceData.okb.lastUpdate ? priceData.okb : null);
+
+          case 24:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, null, null, [[0, 20]]);
   }
   /**
    * 更新页面上的价格显示
@@ -570,31 +638,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function updateAllPrices() {
     var promises;
-    return regeneratorRuntime.async(function updateAllPrices$(_context4) {
+    return regeneratorRuntime.async(function updateAllPrices$(_context5) {
       while (1) {
-        switch (_context4.prev = _context4.next) {
+        switch (_context5.prev = _context5.next) {
           case 0:
             console.log('开始更新价格数据...'); // 并行获取三个价格
 
             promises = [fetchXwawaPrice(), fetchBitcoinPrice(), fetchOkbPrice()];
-            _context4.prev = 2;
-            _context4.next = 5;
+            _context5.prev = 2;
+            _context5.next = 5;
             return regeneratorRuntime.awrap(Promise.all(promises));
 
           case 5:
             updatePriceDisplay();
             console.log('价格数据更新完成');
-            _context4.next = 12;
+            _context5.next = 12;
             break;
 
           case 9:
-            _context4.prev = 9;
-            _context4.t0 = _context4["catch"](2);
-            console.error('价格更新失败:', _context4.t0);
+            _context5.prev = 9;
+            _context5.t0 = _context5["catch"](2);
+            console.error('价格更新失败:', _context5.t0);
 
           case 12:
           case "end":
-            return _context4.stop();
+            return _context5.stop();
         }
       }
     }, null, null, [[2, 9]]);

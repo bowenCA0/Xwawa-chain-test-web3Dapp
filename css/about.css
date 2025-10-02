@@ -32,7 +32,7 @@
 /* Hero Banner Section */
 .about-hero-banner {
     position: relative;
-    min-height: 100vh;
+    min-height: 85vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -164,6 +164,7 @@
     background: rgba(255, 255, 255, 0.1);
     color: white;
     border: 2px solid rgba(255, 255, 255, 0.2);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
@@ -437,57 +438,34 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* Responsive Design */
-/* 横屏版本优化 - 大幅减小hero banner高度 */
-@media (min-width: 769px) {
-    .about-hero-banner {
-        min-height: 40vh !important;
-        padding: 1.5rem 0 !important;
-    }
-    
-    .main-logo {
-        width: 60px !important;
-        height: 60px !important;
-    }
-    
-    .brand-title {
-        font-size: 2.5rem !important;
-        margin: 1rem 0 0.5rem 0 !important;
-    }
-    
-    .brand-subtitle {
-        font-size: 1rem !important;
-        margin-bottom: 1.5rem !important;
-    }
-    
-    .logo-showcase {
-        margin-bottom: 1rem !important;
-    }
-    
-    .hero-actions {
-        margin-top: 1rem !important;
-    }
-    
-    .hero-actions .btn {
-        padding: 0.6rem 1.2rem !important;
-        font-size: 0.9rem !important;
-    }
+/* About Content Card Wrapper */
+.about-content-wrapper {
+    background: #f8f9fa;
+    padding: 3rem 0;
 }
 
-/* 超大屏幕版本 - 进一步优化 */
-@media (min-width: 1200px) {
-    .about-hero-banner {
-        min-height: 35vh !important;
-        padding: 1rem 0 !important;
-    }
-    
-    .main-logo {
-        width: 70px !important;
-        height: 70px !important;
-    }
+.about-content-wrapper .container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 3rem;
+    margin: 0 auto;
+    max-width: 1200px;
 }
+
+/* Responsive Design */
 
 @media (max-width: 768px) {
+    .about-content-wrapper {
+        padding: 1.5rem 0;
+    }
+    
+    .about-content-wrapper .container {
+        border-radius: 15px;
+        padding: 2rem 1.5rem;
+        margin: 0 1rem;
+    }
+    
     .brand-title {
         font-size: 2.5rem;
     }
@@ -502,14 +480,27 @@
         align-items: center;
     }
     
+    .about-intro {
+        padding: 2rem 0;
+    }
+    
     .intro-content {
         grid-template-columns: 1fr;
         gap: 2rem;
         text-align: center;
     }
     
+    .intro-text h2 {
+        font-size: 2rem;
+    }
+    
+    .intro-text p {
+        font-size: 1rem;
+    }
+    
     .features-grid {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
     
     .contact-buttons {

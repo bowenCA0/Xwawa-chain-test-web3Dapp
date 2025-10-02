@@ -660,6 +660,7 @@ nav ul li a:hover::after, nav ul li a.active::after {
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
     padding: 30px;
     border-radius: 24px;
+    -webkit-backdrop-filter: blur(15px);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.25);
     min-width: 300px;
@@ -962,6 +963,7 @@ nav ul li a:hover::after, nav ul li a.active::after {
     .price-change {
         font-size: 0.85rem;
         padding: 4px 10px;
+        min-width: -webkit-fill-available;
         min-width: fit-content;
         text-align: center;
     }
@@ -1004,6 +1006,7 @@ nav ul li a:hover::after, nav ul li a.active::after {
     .price-change {
         font-size: 0.75rem;
         padding: 3px 6px;
+        min-width: -webkit-fill-available;
         min-width: fit-content;
         text-align: center;
         border-radius: 15px;
@@ -1047,6 +1050,7 @@ nav ul li a:hover::after, nav ul li a.active::after {
     .price-change {
         font-size: 0.7rem;
         padding: 2px 4px;
+        min-width: -webkit-fill-available;
         min-width: fit-content;
         text-align: center;
         border-radius: 12px;
@@ -1284,6 +1288,7 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
@@ -1313,6 +1318,7 @@ footer {
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 25px;
     padding: 10px 20px;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
@@ -1348,6 +1354,7 @@ footer {
     border-radius: 20px;
     font-size: 0.9rem;
     font-weight: 500;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     z-index: 10;
 }

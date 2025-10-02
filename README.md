@@ -148,6 +148,85 @@ GET  /api/user/balance          # 获取用户余额
 GET  /api/user/transactions     # 获取交易记录
 ```
 
+## 数据库连接解决方案
+
+### 问题背景
+在生产环境中，我们遇到了数据库连接不稳定的问题，主要表现为：
+- `ECONNRESET` 错误 - 连接被远程服务器重置
+- `PROTOCOL_CONNECTION_LOST` 错误 - 协议连接丢失
+- 长时间空闲后连接自动断开
+
+### 解决方案架构
+我们实现了三层防护机制来确保数据库连接的稳定性：
+
+#### 1. 连接池优化
+```javascript
+// server/db.js - 优化的连接池配置
+const DB_CONFIG = {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  connectionLimit: 10,
+  acquireTimeout: 60000,      // 获取连接超时
+  idleTimeout: 1800000,       // 空闲超时 (30分钟)
+  maxIdle: 5,                 // 最大空闲连接数
+  enableKeepAlive: true,      // 启用TCP Keep-Alive
+  keepAliveInitialDelay: 0,   // Keep-Alive初始延迟
+  charset: 'utf8mb4',         // 字符集
+  timezone: '+00:00'          // 时区
+};
+```
+
+#### 2. 健康检查机制
+```javascript
+// 每5分钟检查连接池健康状态
+function startHealthCheck() {
+  setInterval(async () => {
+    try {
+      await pool.execute('SELECT 1');
+      console.log('Database health check: OK');
+    } catch (error) {
+      console.error('Database health check failed:', error.message);
+    }
+  }, 5 * 60 * 1000);
+}
+```
+
+#### 3. 应用层重试机制
+```javascript
+// 智能重试机制，处理临时连接问题
+async function executeWithRetry(query, params, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const [rows] = await pool.execute(query, params);
+      return rows;
+    } catch (error) {
+      if (shouldRetry(error) && attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+```
+
+### 最佳实践
+1. **连接池管理**: 合理设置连接池大小和超时参数
+2. **健康检查**: 定期检查连接状态，及时发现问题
+3. **智能重试**: 对临时网络问题实现自动重试
+4. **监控告警**: 记录连接错误，设置监控告警
+5. **优雅关闭**: 应用关闭时正确释放连接资源
+
+### 相关文档
+- [数据库连接解决方案](docs/DATABASE_CONNECTION.md) - 详细的技术实现文档
+- [故障排查指南](docs/TROUBLESHOOTING.md) - 常见问题诊断和解决方案
+- [部署配置指南](docs/DEPLOYMENT.md) - 生产环境部署最佳实践
+- [数据库连接贡献指南](docs/CONTRIBUTING_DB.md) - 参与数据库连接优化的开发指南
+- [数据库连接变更日志](CHANGELOG_DB.md) - 所有相关改进和修复的历史记录
+
 ## 开发指南
 
 ### 代码规范

@@ -213,6 +213,55 @@ Cache Level: Cache Everything
 Edge Cache TTL: 1 hour
 ```
 
+## 智能合约部署（Foundry）
+
+本项目前端依赖 `Lottery` 智能合约。以下步骤使用 Foundry 部署该合约。
+
+### 前置条件
+- 已安装 Foundry（参考：https://book.getfoundry.sh/getting-started/installation）
+- 仓库根目录新增：`foundry.toml`、`script/Lottery.s.sol`（已添加）
+- 将同事提供的 `Lottery.sol` 放入 `src/Lottery.sol`
+- 准备 RPC 与私钥（仅测试网络或安全账户）
+
+### 安装依赖
+```bash
+forge install foundry-rs/forge-std --no-commit
+```
+
+### Windows PowerShell 环境变量示例
+```powershell
+$env:RPC_URL = "https://your-rpc"
+$env:PRIVATE_KEY = "0x你的私钥"
+```
+
+### 部署命令
+```powershell
+forge script script/Lottery.s.sol --rpc-url $env:RPC_URL --broadcast --private-key $env:PRIVATE_KEY --legacy
+```
+
+### 部署参数（已在脚本中固定）
+- 分母：1,000,000（百万分制）
+- 概率：
+  - firstPrizeOfMerch = 400（0.04%）
+  - secondPrizeOfMerch = 600（0.06%）
+  - thirdPrizeOfMerch = 1000（0.1%）
+  - partOfPool = 3000（0.3%）
+  - doubleBonus = 295_000（29.5%）
+  - nothing = 700_000（70.0%）
+- drawCost = 10000 ether
+- feeToCommunity = 2000（0.2%）
+- communityTreasury = 0xCD6C5393F06dFF566f52ec2cAB51c3cA2B047dba
+- partRate = 50_000（5%）
+- owner = 0xBE0C630241768A53A98DF324a53e0C60F9cf0d52
+
+部署完成后，终端会输出：
+```
+Lottery: 0x...
+```
+记录该地址，并在前端配置中使用。
+
+---
+
 ## 后端 API 部署
 
 ### 1. Node.js 后端部署

@@ -111,12 +111,16 @@ var prizes = [{
 var lotteryABI = [// TODO: 从实际部署的合约中获取完整ABI
 // 以下是示例结构，实际使用时需要替换
 {
-  "inputs": [],
+  "inputs": [{
+    "internalType": "uint256",
+    "name": "_times",
+    "type": "uint256"
+  }],
   "name": "draw",
   "outputs": [{
-    "internalType": "uint256",
-    "name": "",
-    "type": "uint256"
+    "internalType": "uint8[]",
+    "name": "winningType",
+    "type": "uint8[]"
   }],
   "stateMutability": "nonpayable",
   "type": "function"
@@ -156,23 +160,39 @@ var lotteryContractAddress = "0x1234567890123456789012345678901234567890"; // TO
 var xwawaTokenAddress = "0x0987654321098765432109876543210987654321"; // TODO: 替换为实际代币地址
 
 /**
+ * 关闭结果弹窗
+ */
+
+function closeResultModal() {
+  var modal = document.getElementById('result-modal');
+
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+/**
  * 页面初始化
  * 在DOM加载完成后执行所有初始化操作
  */
 
-document.addEventListener('DOMContentLoaded', function () {
-  // 初始化用户界面状态
-  updateUI(); // 绑定用户交互事件
 
-  document.getElementById('connect-wallet-btn').addEventListener('click', connectWallet);
-  document.getElementById('draw-button').addEventListener('click', startDraw);
-  document.getElementById('draw-times-minus').addEventListener('click', function () {
+document.addEventListener('DOMContentLoaded', function () {
+  // 初始化用户界面状态（现在由WalletManager处理）
+  // updateUI();
+  // 绑定用户交互事件
+  // 注意：钱包连接现在由WalletManager处理
+  var drawButton = document.getElementById('draw-button');
+  var drawTimesMinusBtn = document.getElementById('draw-times-minus');
+  var drawTimesPlusBtn = document.getElementById('draw-times-plus');
+  var drawTimesInput = document.getElementById('draw-times-input');
+  if (drawButton) drawButton.addEventListener('click', startDraw);
+  if (drawTimesMinusBtn) drawTimesMinusBtn.addEventListener('click', function () {
     return updateDrawTimes(-1);
   });
-  document.getElementById('draw-times-plus').addEventListener('click', function () {
+  if (drawTimesPlusBtn) drawTimesPlusBtn.addEventListener('click', function () {
     return updateDrawTimes(1);
   });
-  document.getElementById('draw-times-input').addEventListener('change', validateDrawTimes); // 绑定弹窗关闭事件
+  if (drawTimesInput) drawTimesInput.addEventListener('change', validateDrawTimes); // 绑定弹窗关闭事件
 
   document.querySelectorAll('.close-modal, .close-result-btn').forEach(function (element) {
     element.addEventListener('click', closeResultModal);
@@ -180,7 +200,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initLanguageSwitch(); // 检查是否已连接钱包 (页面刷新后恢复状态)
 
-  checkWalletConnection();
+  checkWalletConnection(); // 初始化钱包管理器
+
+  if (typeof WalletManager !== 'undefined') {
+    var walletManager = new WalletManager();
+    walletManager.init();
+  }
 });
 /**
  * 初始化语言切换功能
@@ -231,13 +256,13 @@ function switchLanguage(lang) {
 
 
 function checkWalletConnection() {
-  var accounts;
+  var accounts, abi, addr;
   return regeneratorRuntime.async(function checkWalletConnection$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
           if (!window.ethereum) {
-            _context.next = 18;
+            _context.next = 27;
             break;
           }
 
@@ -251,34 +276,57 @@ function checkWalletConnection() {
           accounts = _context.sent;
 
           if (!(accounts.length > 0)) {
-            _context.next = 13;
+            _context.next = 22;
             break;
           }
 
           userAccount = accounts[0];
-          web3 = new Web3(window.ethereum);
-          lotteryContract = new web3.eth.Contract(lotteryABI, lotteryContractAddress);
-          isConnected = true;
-          updateUI(); // 获取最新的抽奖成本
+          web3 = new Web3(window.ethereum); // 动态加载ABI与部署地址
 
-          _context.next = 13;
-          return regeneratorRuntime.awrap(updateDrawCostFromContract());
+          _context.prev = 8;
+          _context.next = 11;
+          return regeneratorRuntime.awrap(window.ContractConfig.loadLotteryAbi());
 
-        case 13:
-          _context.next = 18;
+        case 11:
+          abi = _context.sent;
+          addr = window.ContractConfig.lotteryAddress;
+
+          if (!addr) {
+            console.error('Lottery合约地址未配置，请在 js/contract-config.js 中填写 lotteryAddress');
+          } else {
+            lotteryContract = new web3.eth.Contract(abi, addr);
+          }
+
+          _context.next = 19;
           break;
 
-        case 15:
-          _context.prev = 15;
-          _context.t0 = _context["catch"](1);
-          console.error("检查钱包连接失败:", _context.t0);
+        case 16:
+          _context.prev = 16;
+          _context.t0 = _context["catch"](8);
+          console.error('加载Lottery ABI失败:', _context.t0);
 
-        case 18:
+        case 19:
+          isConnected = true; // updateUI(); // 现在由WalletManager处理
+          // 获取最新的抽奖成本
+
+          _context.next = 22;
+          return regeneratorRuntime.awrap(updateDrawCostFromContract());
+
+        case 22:
+          _context.next = 27;
+          break;
+
+        case 24:
+          _context.prev = 24;
+          _context.t1 = _context["catch"](1);
+          console.error("检查钱包连接失败:", _context.t1);
+
+        case 27:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[1, 15]]);
+  }, null, null, [[1, 24], [8, 16]]);
 }
 /**
  * 连接钱包功能
@@ -300,7 +348,7 @@ function checkWalletConnection() {
 
 
 function connectWallet() {
-  var accounts;
+  var accounts, abi, addr;
   return regeneratorRuntime.async(function connectWallet$(_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
@@ -308,7 +356,7 @@ function connectWallet() {
           _context2.prev = 0;
 
           if (!window.ethereum) {
-            _context2.next = 18;
+            _context2.next = 27;
             break;
           }
 
@@ -324,57 +372,78 @@ function connectWallet() {
           userAccount = accounts[0]; // 创建Web3实例
 
           web3 = new Web3(window.ethereum); // 初始化抽奖智能合约实例
+          // 动态加载ABI与部署地址
 
-          lotteryContract = new web3.eth.Contract(lotteryABI, lotteryContractAddress); // 从智能合约获取最新的抽奖成本
-
+          _context2.prev = 8;
           _context2.next = 11;
-          return regeneratorRuntime.awrap(updateDrawCostFromContract());
+          return regeneratorRuntime.awrap(window.ContractConfig.loadLotteryAbi());
 
         case 11:
+          abi = _context2.sent;
+          addr = window.ContractConfig.lotteryAddress;
+
+          if (!addr) {
+            console.error('Lottery合约地址未配置，请在 js/contract-config.js 中填写 lotteryAddress');
+          } else {
+            lotteryContract = new web3.eth.Contract(abi, addr);
+          }
+
+          _context2.next = 19;
+          break;
+
+        case 16:
+          _context2.prev = 16;
+          _context2.t0 = _context2["catch"](8);
+          console.error('加载Lottery ABI失败:', _context2.t0);
+
+        case 19:
+          _context2.next = 21;
+          return regeneratorRuntime.awrap(updateDrawCostFromContract());
+
+        case 21:
           // 监听账户变化事件
           window.ethereum.on('accountsChanged', handleAccountsChanged); // 监听网络变化事件
 
           window.ethereum.on('chainChanged', handleChainChanged); // 更新连接状态
 
           isConnected = true; // 更新用户界面
+          // updateUI(); // 现在由WalletManager处理
 
-          updateUI();
           console.log("钱包连接成功:", userAccount);
-          _context2.next = 20;
+          _context2.next = 29;
           break;
 
-        case 18:
+        case 27:
           // 钱包未安装的处理
           alert("请安装MetaMask钱包以使用抽奖功能！");
           window.open("https://metamask.io/download/", "_blank");
 
-        case 20:
-          _context2.next = 28;
+        case 29:
+          _context2.next = 36;
           break;
 
-        case 22:
-          _context2.prev = 22;
-          _context2.t0 = _context2["catch"](0);
-          console.error("连接钱包失败:", _context2.t0); // 根据错误类型显示不同的提示信息
+        case 31:
+          _context2.prev = 31;
+          _context2.t1 = _context2["catch"](0);
+          console.error("连接钱包失败:", _context2.t1); // 根据错误类型显示不同的提示信息
 
-          if (_context2.t0.code === 4001) {
+          if (_context2.t1.code === 4001) {
             alert("用户拒绝了钱包连接请求");
-          } else if (_context2.t0.code === -32002) {
+          } else if (_context2.t1.code === -32002) {
             alert("钱包连接请求已在处理中，请检查MetaMask");
           } else {
             alert("连接钱包时发生错误，请重试");
           } // 重置连接状态
 
 
-          isConnected = false;
-          updateUI();
+          isConnected = false; // updateUI(); // 现在由WalletManager处理
 
-        case 28:
+        case 36:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[0, 22]]);
+  }, null, null, [[0, 31], [8, 16]]);
 }
 /**
  * 从智能合约更新抽奖成本
@@ -443,9 +512,8 @@ function handleAccountsChanged(accounts) {
     // 用户切换了账户
     userAccount = accounts[0];
     console.log("账户已切换:", userAccount);
-  }
+  } // updateUI(); // 现在由WalletManager处理
 
-  updateUI();
 }
 /**
  * 处理网络变化事件
@@ -533,7 +601,7 @@ function updateTotalCost() {
 
 
 function startDraw() {
-  var drawButton, totalCost, userBalance, results;
+  var drawButton, txReceipt, placeholder;
   return regeneratorRuntime.async(function startDraw$(_context4) {
     while (1) {
       switch (_context4.prev = _context4.next) {
@@ -565,66 +633,40 @@ function startDraw() {
           }
 
           _context4.prev = 8;
-          // 检查用户代币余额
-          totalCost = drawTimes * drawCost;
-          _context4.next = 12;
-          return regeneratorRuntime.awrap(getUserTokenBalance());
+          _context4.next = 11;
+          return regeneratorRuntime.awrap(drawFromContract(drawTimes));
 
-        case 12:
-          userBalance = _context4.sent;
-
-          if (!(userBalance < totalCost)) {
-            _context4.next = 16;
-            break;
-          }
-
-          alert("\u4F59\u989D\u4E0D\u8DB3\uFF01\u9700\u8981 ".concat(totalCost, " XWAWA\uFF0C\u5F53\u524D\u4F59\u989D ").concat(userBalance, " XWAWA"));
-          return _context4.abrupt("return");
-
-        case 16:
-          _context4.next = 18;
-          return regeneratorRuntime.awrap(drawFromContract());
-
-        case 18:
-          results = _context4.sent;
-          // 播放抽奖音效
-          playSpinSound(); // 执行转盘动画 (使用第一个结果)
-
-          if (results.length > 0) {
-            spinWheel(results[0].id);
-          } // 等待动画完成后显示结果
-
-
+        case 11:
+          txReceipt = _context4.sent;
+          startMagicAnimation();
+          playSpinSound();
+          placeholder = prizes[Math.floor(Math.random() * prizes.length)];
+          spinWheel(placeholder.id);
           setTimeout(function () {
-            // 添加获奖特效
-            if (results.length > 0 && results[0].id <= 4) {
-              addWinEffect(results[0].id);
-            } // 显示抽奖结果
+            if (placeholder.id <= 4) {
+              addWinEffect(placeholder.id);
+            }
 
-
-            showResultModal(results); // 添加到历史记录
-
-            addResultsToList(results); // 重置抽奖状态
-
+            showResultModal(placeholder);
+            addResultsToList([placeholder]);
             resetDrawState();
-          }, 3000); // 等待转盘动画完成
-
-          _context4.next = 29;
+          }, 5200);
+          _context4.next = 24;
           break;
 
-        case 24:
-          _context4.prev = 24;
+        case 19:
+          _context4.prev = 19;
           _context4.t0 = _context4["catch"](8);
-          console.error("抽奖失败:", _context4.t0);
+          console.error('抽奖失败:', _context4.t0);
           alert('抽奖失败，请重试');
           resetDrawState();
 
-        case 29:
+        case 24:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[8, 24]]);
+  }, null, null, [[8, 19]]);
 }
 /**
  * 重置抽奖状态
@@ -679,6 +721,44 @@ function getUserTokenBalance() {
       }
     }
   }, null, null, [[0, 10]]);
+}
+/**
+ * 更新UI状态
+ */
+
+
+function updateUI() {
+  var walletStatus = document.getElementById('wallet-status');
+  var connectButton = document.getElementById('connect-wallet-btn');
+  var drawButton = document.getElementById('draw-button');
+
+  if (isConnected) {
+    walletStatus.textContent = "\u5DF2\u8FDE\u63A5: ".concat(shortenAddress(userAccount));
+    walletStatus.className = 'connected';
+    connectButton.textContent = '已连接';
+    connectButton.disabled = true;
+    drawButton.disabled = false;
+  } else {
+    walletStatus.textContent = '未连接钱包';
+    walletStatus.className = 'not-connected';
+    connectButton.textContent = '连接钱包';
+    connectButton.disabled = false;
+    drawButton.disabled = true;
+  } // 更新抽奖成本和总成本
+
+
+  document.getElementById('cost-amount').textContent = drawCost;
+  updateTotalCost();
+}
+/**
+ * 缩短地址显示
+ * @param {string} address - 钱包地址
+ * @returns {string} 缩短后的地址
+ */
+
+
+function shortenAddress(address) {
+  return "".concat(address.substring(0, 6), "...").concat(address.substring(address.length - 4));
 }
 /**
  * 模拟抽奖结果生成 (仅用于开发测试)
@@ -739,40 +819,54 @@ function generateMockResults() {
 
 
     return prizes[prizes.length - 1];
-  } // 旋转转盘 - Web3风格优化版本
+  } // 魔法转盘旋转 - 魔法主题优化版本
 
 
   function spinWheel(prizeId) {
     var wheel = document.querySelector('.wheel-inner');
     var wheelContainer = document.querySelector('.lottery-wheel-container');
-    var pointer = document.querySelector('.wheel-pointer'); // 添加旋转开始的视觉效果
+    var pointer = document.querySelector('.wheel-pointer');
+    var wheelAura = document.querySelector('.wheel-magic-aura'); // 添加魔法旋转开始的视觉效果
 
-    wheelContainer.classList.add('spinning');
-    pointer.classList.add('pointer-active'); // 计算旋转角度
+    wheelContainer.classList.add('spinning', 'magic-spinning');
+    pointer.classList.add('pointer-active'); // 激活魔法光环
+
+    if (wheelAura) {
+      wheelAura.classList.add('spinning-aura');
+    } // 计算旋转角度
     // 每个奖项占60度，计算目标奖项的中心角度
 
-    var targetAngle = (prizeId - 1) * 60 + 30; // 添加随机的额外旋转圈数 (6-8圈)
 
-    var extraRotations = (6 + Math.random() * 2) * 360; // 最终旋转角度 = 额外圈数 + (360 - 目标角度)
+    var targetAngle = (prizeId - 1) * 60 + 30; // 添加随机的额外旋转圈数 (8-12圈，更多圈数增加魔法感)
 
-    var finalRotation = extraRotations + (360 - targetAngle); // 应用高级旋转动画
+    var extraRotations = (8 + Math.random() * 4) * 360; // 最终旋转角度 = 额外圈数 + (360 - 目标角度)
 
-    wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    var finalRotation = extraRotations + (360 - targetAngle); // 应用魔法旋转动画 - 更长的动画时间和魔法曲线
+
+    wheel.style.transition = 'transform 5s cubic-bezier(0.23, 1, 0.32, 1)';
     wheel.style.transform = "rotate(".concat(finalRotation, "deg)"); // 添加音效和震动效果 (如果支持)
 
     playSpinSound();
-    addVibration(); // 动画过程中的中间效果
+    addVibration(); // 创建魔法旋转粒子效果
+
+    createSpinningMagicParticles(); // 动画过程中的魔法效果
 
     setTimeout(function () {
-      // 中途添加一些视觉反馈
-      wheelContainer.classList.add('mid-spin');
-    }, 2000); // 动画结束后的处理
+      // 中途添加魔法能量爆发
+      wheelContainer.classList.add('mid-spin', 'magic-burst');
+      createMagicEnergyWave();
+    }, 2500); // 动画结束后的处理
 
     setTimeout(function () {
       isSpinning = false;
-      wheelContainer.classList.remove('spinning', 'mid-spin');
+      wheelContainer.classList.remove('spinning', 'mid-spin', 'magic-spinning', 'magic-burst');
       pointer.classList.remove('pointer-active');
-      wheelContainer.classList.add('spin-complete'); // 添加获奖效果
+      wheelContainer.classList.add('spin-complete');
+
+      if (wheelAura) {
+        wheelAura.classList.remove('spinning-aura');
+      } // 添加获奖效果
+
 
       addWinEffect(prizeId);
       document.getElementById('draw-button').disabled = false; // 清除完成状态
@@ -780,7 +874,7 @@ function generateMockResults() {
       setTimeout(function () {
         wheelContainer.classList.remove('spin-complete');
       }, 1000);
-    }, 4000);
+    }, 5000); // 延长到5秒匹配新的动画时间
   } // 播放旋转音效
 
 
@@ -879,13 +973,8 @@ function generateMockResults() {
     resultIcon.style.color = result.color; // 显示弹窗
 
     modal.style.display = 'block';
-  } // 关闭结果弹窗
-
-
-  function closeResultModal() {
-    var modal = document.getElementById('result-modal');
-    modal.style.display = 'none';
-  } // 获取结果消息
+  } // 关闭结果弹窗 - 移除，将在文件顶部重新定义
+  // 获取结果消息
 
 
   function getResultMessage(prizeId) {
@@ -937,36 +1026,6 @@ function generateMockResults() {
       default:
         return "❓";
     }
-  } // 更新UI
-
-
-  function updateUI() {
-    var walletStatus = document.getElementById('wallet-status');
-    var connectButton = document.getElementById('connect-wallet-btn');
-    var drawButton = document.getElementById('draw-button');
-
-    if (isConnected) {
-      walletStatus.textContent = "\u5DF2\u8FDE\u63A5: ".concat(shortenAddress(userAccount));
-      walletStatus.className = 'connected';
-      connectButton.textContent = '已连接';
-      connectButton.disabled = true;
-      drawButton.disabled = false;
-    } else {
-      walletStatus.textContent = '未连接钱包';
-      walletStatus.className = 'not-connected';
-      connectButton.textContent = '连接钱包';
-      connectButton.disabled = false;
-      drawButton.disabled = true;
-    } // 更新抽奖成本和总成本
-
-
-    document.getElementById('cost-amount').textContent = drawCost;
-    updateTotalCost();
-  } // 缩短地址显示
-
-
-  function shortenAddress(address) {
-    return "".concat(address.substring(0, 6), "...").concat(address.substring(address.length - 4));
   }
 }
 /**
@@ -984,61 +1043,34 @@ function generateMockResults() {
 // 实际调用合约的draw函数
 
 
-function drawFromContract() {
-  var xwawaContract, balance, requiredAmount, result;
+function drawFromContract(times) {
+  var tx;
   return regeneratorRuntime.async(function drawFromContract$(_context6) {
     while (1) {
       switch (_context6.prev = _context6.next) {
         case 0:
           _context6.prev = 0;
           _context6.next = 3;
-          return regeneratorRuntime.awrap(getXwawaContract());
+          return regeneratorRuntime.awrap(lotteryContract.methods.draw(times).send({
+            from: userAccount
+          }));
 
         case 3:
-          xwawaContract = _context6.sent;
-          _context6.next = 6;
-          return regeneratorRuntime.awrap(xwawaContract.methods.balanceOf(userAccount).call());
+          tx = _context6.sent;
+          return _context6.abrupt("return", tx);
 
-        case 6:
-          balance = _context6.sent;
-          requiredAmount = web3.utils.toWei((drawCost * drawTimes).toString(), 'ether');
-
-          if (!(parseInt(balance) < parseInt(requiredAmount))) {
-            _context6.next = 11;
-            break;
-          }
-
-          alert('Xwawa代币余额不足，请充值后再试');
-          return _context6.abrupt("return", null);
-
-        case 11:
-          _context6.next = 13;
-          return regeneratorRuntime.awrap(xwawaContract.methods.approve(lotteryContractAddress, requiredAmount).send({
-            from: userAccount
-          }));
-
-        case 13:
-          _context6.next = 15;
-          return regeneratorRuntime.awrap(lotteryContract.methods.draw().send({
-            from: userAccount
-          }));
-
-        case 15:
-          result = _context6.sent;
-          return _context6.abrupt("return", result);
-
-        case 19:
-          _context6.prev = 19;
+        case 7:
+          _context6.prev = 7;
           _context6.t0 = _context6["catch"](0);
           console.error("合约抽奖失败:", _context6.t0);
           throw _context6.t0;
 
-        case 23:
+        case 11:
         case "end":
           return _context6.stop();
       }
     }
-  }, null, null, [[0, 19]]);
+  }, null, null, [[0, 7]]);
 } // 获取Xwawa代币合约
 
 
@@ -1097,6 +1129,219 @@ function getXwawaContract() {
       }
     }
   }, null, null, [[0, 8]]);
+}
+/**
+ * 魔法师Xwawa动画系统
+ * 实现魔法棒挥动、魔法粒子效果和转盘魔法化
+ */
+// 启动魔法动画序列
+
+
+function startMagicAnimation() {
+  var magicWizard = document.querySelector('.magic-wizard');
+  var magicWand = document.querySelector('.magic-wand');
+  var magicArm = document.querySelector('#magic-arm');
+  var magicParticles = document.querySelector('.magic-particles');
+  var magicSpell = document.querySelector('.magic-spell');
+  var wheelAura = document.querySelector('.wheel-magic-aura');
+  if (!magicWizard) return; // 1. 魔法师准备施法
+
+  magicWizard.classList.add('casting'); // 2. 显示魔法咒语
+
+  if (magicSpell) {
+    magicSpell.style.opacity = '1';
+    magicSpell.style.transform = 'translateY(-10px)';
+  } // 3. 手臂和魔法棒开始挥动
+
+
+  setTimeout(function () {
+    // 手臂挥动动画
+    if (magicArm) {
+      magicArm.classList.add('casting');
+    } // 魔法棒挥动动画
+
+
+    if (magicWand) {
+      magicWand.classList.add('waving');
+    } // 激活魔法粒子效果
+
+
+    if (magicParticles) {
+      magicParticles.classList.add('active');
+    } // 播放魔法音效
+
+
+    playMagicSound();
+  }, 500); // 4. 转盘获得魔法光环
+
+  setTimeout(function () {
+    if (wheelAura) {
+      wheelAura.classList.add('active');
+    } // 创建魔法粒子爆发效果
+
+
+    createMagicBurst();
+  }, 1000); // 5. 动画结束后重置状态
+
+  setTimeout(function () {
+    resetMagicAnimation();
+  }, 6000);
+} // 重置魔法动画状态
+
+
+function resetMagicAnimation() {
+  var magicWizard = document.querySelector('.magic-wizard');
+  var magicWand = document.querySelector('.magic-wand');
+  var magicArm = document.querySelector('#magic-arm');
+  var magicParticles = document.querySelector('.magic-particles');
+  var magicSpell = document.querySelector('.magic-spell');
+  var wheelAura = document.querySelector('.wheel-magic-aura');
+  if (magicWizard) magicWizard.classList.remove('casting');
+  if (magicWand) magicWand.classList.remove('waving');
+  if (magicArm) magicArm.classList.remove('casting');
+  if (magicParticles) magicParticles.classList.remove('active');
+  if (wheelAura) wheelAura.classList.remove('active');
+
+  if (magicSpell) {
+    magicSpell.style.opacity = '0';
+    magicSpell.style.transform = 'translateY(0)';
+  }
+} // 播放魔法音效
+
+
+function playMagicSound() {
+  try {
+    var audioContext = new (window.AudioContext || window.webkitAudioContext)(); // 创建魔法音效序列
+
+    var frequencies = [440, 554, 659, 880]; // A4, C#5, E5, A5 - 魔法和弦
+
+    frequencies.forEach(function (freq, index) {
+      setTimeout(function () {
+        var oscillator = audioContext.createOscillator();
+        var gainNode = audioContext.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      }, index * 150);
+    });
+  } catch (e) {
+    console.log('Magic audio not supported');
+  }
+} // 创建魔法粒子爆发效果
+
+
+function createMagicBurst() {
+  var wheelContainer = document.querySelector('.lottery-wheel-container');
+  if (!wheelContainer) return; // 创建多个魔法粒子
+
+  for (var i = 0; i < 30; i++) {
+    setTimeout(function () {
+      var particle = document.createElement('div');
+      particle.className = 'magic-burst-particle'; // 随机位置和颜色
+
+      var colors = ['#FFD700', '#FF69B4', '#00FFFF', '#FF6347', '#98FB98'];
+      particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+      particle.style.left = 50 + (Math.random() - 0.5) * 60 + '%';
+      particle.style.top = 50 + (Math.random() - 0.5) * 60 + '%'; // 随机运动方向
+
+      var angle = Math.random() * Math.PI * 2;
+      var distance = 100 + Math.random() * 100;
+      var endX = Math.cos(angle) * distance;
+      var endY = Math.sin(angle) * distance;
+      particle.style.setProperty('--end-x', endX + 'px');
+      particle.style.setProperty('--end-y', endY + 'px');
+      wheelContainer.appendChild(particle); // 粒子动画
+
+      setTimeout(function () {
+        particle.style.transform = "translate(var(--end-x), var(--end-y)) scale(0)";
+        particle.style.opacity = '0';
+      }, 50); // 清理粒子
+
+      setTimeout(function () {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle);
+        }
+      }, 2000);
+    }, i * 50);
+  }
+} // 创建魔法旋转粒子效果
+
+
+function createSpinningMagicParticles() {
+  var wheelContainer = document.querySelector('.lottery-wheel-container');
+  if (!wheelContainer) return; // 创建围绕转盘旋转的魔法粒子
+
+  var _loop = function _loop(i) {
+    setTimeout(function () {
+      var particle = document.createElement('div');
+      particle.className = 'spinning-magic-particle'; // 魔法颜色
+
+      var colors = ['#FFD700', '#FF69B4', '#00FFFF', '#9370DB', '#FF6347'];
+      particle.style.background = colors[Math.floor(Math.random() * colors.length)]; // 设置初始位置（圆形轨道）
+
+      var angle = i / 20 * Math.PI * 2;
+      var radius = 150;
+      var x = 50 + Math.cos(angle) * radius / 4; // 转换为百分比
+
+      var y = 50 + Math.sin(angle) * radius / 4;
+      particle.style.left = x + '%';
+      particle.style.top = y + '%';
+      particle.style.setProperty('--orbit-angle', angle + 'rad');
+      wheelContainer.appendChild(particle); // 清理粒子
+
+      setTimeout(function () {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle);
+        }
+      }, 5000);
+    }, i * 100);
+  };
+
+  for (var i = 0; i < 20; i++) {
+    _loop(i);
+  }
+} // 创建魔法能量波效果
+
+
+function createMagicEnergyWave() {
+  var wheelContainer = document.querySelector('.lottery-wheel-container');
+  if (!wheelContainer) return; // 创建能量波
+
+  var _loop2 = function _loop2(i) {
+    setTimeout(function () {
+      var wave = document.createElement('div');
+      wave.className = 'magic-energy-wave'; // 设置波的颜色
+
+      var colors = ['#FFD700', '#FF69B4', '#00FFFF'];
+      wave.style.borderColor = colors[i];
+      wave.style.left = '50%';
+      wave.style.top = '50%';
+      wave.style.transform = 'translate(-50%, -50%)';
+      wheelContainer.appendChild(wave); // 波动画
+
+      setTimeout(function () {
+        wave.style.width = '400px';
+        wave.style.height = '400px';
+        wave.style.opacity = '0';
+      }, 50); // 清理波
+
+      setTimeout(function () {
+        if (wave.parentNode) {
+          wave.parentNode.removeChild(wave);
+        }
+      }, 1500);
+    }, i * 300);
+  };
+
+  for (var i = 0; i < 3; i++) {
+    _loop2(i);
+  }
 }
 /**
  * 注意事项:

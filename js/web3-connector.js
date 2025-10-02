@@ -37,7 +37,87 @@
  */
 
 /**
- * 初始化Web3环境
+ * 检测可用的钱包
+ * @returns {Object} 可用钱包列表
+ */
+function detectWallets() {
+    const wallets = {
+        metamask: false,
+        okx: false,
+        tokenpocket: false
+    };
+
+    // 检测 MetaMask
+    if (window.ethereum && window.ethereum.isMetaMask) {
+        wallets.metamask = true;
+    }
+
+    // 检测 OKX Wallet
+    if (window.okxwallet || (window.ethereum && window.ethereum.isOkxWallet)) {
+        wallets.okx = true;
+    }
+
+    // 检测 TokenPocket
+    if (window.tokenpocket || (window.ethereum && window.ethereum.isTokenPocket)) {
+        wallets.tokenpocket = true;
+    }
+
+    return wallets;
+}
+
+/**
+ * 连接指定钱包
+ * @param {string} walletType - 钱包类型 ('metamask', 'okx', 'tokenpocket')
+ * @returns {Object} Web3实例
+ */
+async function connectWallet(walletType) {
+    let provider = null;
+
+    switch (walletType) {
+        case 'metamask':
+            if (window.ethereum && window.ethereum.isMetaMask) {
+                provider = window.ethereum;
+            } else {
+                throw new Error("MetaMask未安装。请安装MetaMask钱包!");
+            }
+            break;
+
+        case 'okx':
+            if (window.okxwallet) {
+                provider = window.okxwallet;
+            } else if (window.ethereum && window.ethereum.isOkxWallet) {
+                provider = window.ethereum;
+            } else {
+                throw new Error("OKX钱包未安装。请安装OKX钱包!");
+            }
+            break;
+
+        case 'tokenpocket':
+            if (window.tokenpocket) {
+                provider = window.tokenpocket.ethereum;
+            } else if (window.ethereum && window.ethereum.isTokenPocket) {
+                provider = window.ethereum;
+            } else {
+                throw new Error("TokenPocket未安装。请安装TokenPocket钱包!");
+            }
+            break;
+
+        default:
+            throw new Error("不支持的钱包类型");
+    }
+
+    try {
+        // 请求用户授权
+        await provider.request({ method: 'eth_requestAccounts' });
+        return new Web3(provider);
+    } catch (error) {
+        console.error(`${walletType}连接失败:`, error);
+        throw new Error(`${walletType}连接被拒绝或失败`);
+    }
+}
+
+/**
+ * 初始化Web3环境 (兼容旧版本)
  * 连接到以太坊网络并返回Web3实例
  * 
  * 功能流程:
@@ -86,9 +166,9 @@ function loadContract(web3, abi, address) {
  */
 async function loadAbiFromFile(path) {
     try {
-        // 在实际环境中，这里应该是一个AJAX请求或其他方式获取ABI文件
-        // 这里为了演示，直接返回一个示例ABI
-        return JSON.parse(lotteryAbiJson);
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`加载ABI失败: ${res.status}`);
+        return await res.json();
     } catch (error) {
         console.error("加载ABI失败:", error);
         throw error;
@@ -133,10 +213,12 @@ function listenForNetworkChanges(callback) {
  * @returns {Object} - 交易收据
  */
 async function sendTransaction(web3, tx, from) {
-    return await web3.eth.sendTransaction({
-        ...tx,
+    // 兼容空/未定义的交易对象，避免在展开空对象时报错
+    const payload = {
+        ...(tx || {}),
         from
-    });
+    };
+    return await web3.eth.sendTransaction(payload);
 }
 
 /**
@@ -189,6 +271,10 @@ async function approveToken(tokenContract, spender, amount, from) {
 }
 
 // 导出函数
+// 将函数导出到全局作用域
+window.detectWallets = detectWallets;
+window.connectWallet = connectWallet;
+
 window.Web3Connector = {
     initWeb3,
     loadContract,
@@ -200,7 +286,9 @@ window.Web3Connector = {
     callContractMethod,
     sendContractTransaction,
     getTokenBalance,
-    approveToken
+    approveToken,
+    detectWallets,
+    connectWallet
 };
 
 // Lottery ABI JSON字符串

@@ -27,6 +27,19 @@
  * - 区块链浏览器API - 交易验证
  */
 document.addEventListener('DOMContentLoaded', function() {
+    // 只读 Web3：商城支付无需连接钱包，用于监听收款地址余额
+    let readOnlyWeb3 = null;
+    let initialBalanceWei = null;
+
+    function initReadOnlyWeb3() {
+        const rpcUrl = (window.ContractConfig && window.ContractConfig.rpcUrl) || 'https://rpc.ankr.com/eth';
+        try {
+            readOnlyWeb3 = new Web3(rpcUrl);
+            console.log('只读Web3已初始化:', rpcUrl);
+        } catch (e) {
+            console.error('初始化只读Web3失败:', e);
+        }
+    }
     
     /**
      * 多语言切换功能
@@ -158,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * 3. 生成支付地址和二维码
      * 4. 启动订单过期倒计时
      */
-    createOrderBtn.addEventListener('click', function() {
+    createOrderBtn.addEventListener('click', async function() {
         const email = customerEmail.value;
         if (!email || !validateEmail(email)) {
             alert('请输入有效的邮箱地址');
@@ -281,7 +294,10 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             // 生成模拟订单数据 (实际应从API返回)
             const orderId = 'XW' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-            const walletAddress = generatePaymentAddress(); // 实际应从后端生成
+            const walletAddress = (window.ContractConfig && window.ContractConfig.paymentAddress) || '';
+            if (!walletAddress) {
+                alert('未配置支付地址。请在 js/contract-config.js 中设置 paymentAddress');
+            }
             
             // 更新UI显示订单详情
             document.getElementById('order-id').textContent = orderId;
@@ -293,6 +309,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 启动订单过期倒计时
             startExpiryCountdown();
+
+            // 初始化只读Web3并开始监听收款
+            initReadOnlyWeb3();
+            startPaymentMonitor(orderId, email, walletAddress);
             
             // 更新UI状态：显示支付信息，隐藏创建按钮
             paymentInfo.classList.remove('hidden');
@@ -313,9 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * 实际生产环境中应由后端安全生成
      * @returns {string} 以太坊钱包地址
      */
-    function generatePaymentAddress() {
-        return '0x' + Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-    }
+    // 商城模式无需生成随机地址，固定使用配置中的收款地址
     
     /**
      * 生成支付二维码
@@ -326,6 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.QRCode) {
             const qrCodeElement = document.getElementById('payment-qr-code');
             qrCodeElement.innerHTML = '';
+            // 生成简单地址二维码；如需金额/链ID可改为 EIP-681 格式
             new QRCode(qrCodeElement, {
                 text: walletAddress,
                 width: 170,
@@ -335,6 +354,66 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             console.error('QRCode库未加载');
+        }
+    }
+
+    // 启动支付监听：轮询收款地址余额变化（10s）
+    function startPaymentMonitor(orderId, email, walletAddress) {
+        if (!readOnlyWeb3 || !walletAddress) return;
+        try {
+            readOnlyWeb3.eth.getBalance(walletAddress).then(bal => {
+                initialBalanceWei = bal;
+                console.log('初始余额(wei):', bal);
+            }).catch(err => console.error('获取初始余额失败:', err));
+        } catch (e) {
+            console.error('初始化余额失败:', e);
+        }
+
+        if (window.paymentMonitorInterval) {
+            clearInterval(window.paymentMonitorInterval);
+        }
+        window.paymentMonitorInterval = setInterval(async () => {
+            try {
+                const bal = await readOnlyWeb3.eth.getBalance(walletAddress);
+                if (initialBalanceWei && readOnlyWeb3.utils.toBN(bal).gt(readOnlyWeb3.utils.toBN(initialBalanceWei))) {
+                    clearInterval(window.paymentMonitorInterval);
+                    console.log('检测到收款到账:', bal);
+                    try {
+                        await notifyPaymentReceived(orderId, email, walletAddress, bal);
+                    } catch (notifyErr) {
+                        console.warn('通知后端失败:', notifyErr);
+                    }
+                    alert('已检测到收款到账，确认邮件已发送。');
+                    modal.style.display = 'none';
+                    resetModal();
+                }
+            } catch (pollErr) {
+                console.error('轮询余额失败:', pollErr);
+            }
+        }, 10000);
+    }
+
+    async function notifyPaymentReceived(orderId, email, walletAddress, balanceWei) {
+        const webhook = (window.ContractConfig && window.ContractConfig.notifyWebhookUrl) || '';
+        if (!webhook) {
+            console.log('未配置支付通知Webhook，跳过后端通知。');
+            return;
+        }
+        const payload = {
+            orderId,
+            email,
+            walletAddress,
+            balanceWei,
+            chainId: (window.ContractConfig && window.ContractConfig.chainId) || null,
+            receivedAt: new Date().toISOString()
+        };
+        const res = await fetch(webhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+            throw new Error('通知Webhook失败: ' + res.status);
         }
     }
     
@@ -355,65 +434,29 @@ document.addEventListener('DOMContentLoaded', function() {
      * - 验证接收地址是否正确
      * - 检查交易时间是否在订单有效期内
      */
-    function checkPaymentStatus() {
+    async function checkPaymentStatus() {
         const orderId = document.getElementById('order-id').textContent;
         const walletAddress = document.getElementById('wallet-address').value;
-        const expectedAmount = document.getElementById('payment-token-amount').textContent;
         
-        // 显示检查状态
         checkPaymentBtn.textContent = '检查中...';
         checkPaymentBtn.disabled = true;
-        
-        // TODO: 替换为实际的API调用
-        // const paymentCheckData = {
-        //     orderId: orderId,
-        //     walletAddress: walletAddress,
-        //     expectedAmount: expectedAmount
-        // };
-        // 
-        // fetch(`/api/orders/${orderId}/payment-status`, {
-        //     method: 'GET',
-        //     headers: { 'Content-Type': 'application/json' }
-        // })
-        // .then(response => response.json())
-        // .then(data => {
-        //     if (data.isPaid && data.transactionHash) {
-        //         // 验证区块链交易
-        //         return verifyBlockchainTransaction(data.transactionHash, walletAddress, expectedAmount);
-        //     }
-        //     return false;
-        // })
-        
-        // 模拟API调用延迟
-        setTimeout(() => {
-            // 模拟随机支付状态 (实际应查询区块链)
-            const isSuccessful = Math.random() > 0.5;
-            
-            if (isSuccessful) {
-                // 支付成功处理
-                alert('支付成功！确认邮件已发送到您的邮箱地址。');
+        try {
+            if (!readOnlyWeb3) initReadOnlyWeb3();
+            const bal = await readOnlyWeb3.eth.getBalance(walletAddress);
+            if (initialBalanceWei && readOnlyWeb3.utils.toBN(bal).gt(readOnlyWeb3.utils.toBN(initialBalanceWei))) {
+                await notifyPaymentReceived(orderId, customerEmail.value, walletAddress, bal);
+                alert('已检测到收款到账，确认邮件已发送。');
                 modal.style.display = 'none';
                 resetModal();
-                
-                // TODO: 实际应用中的成功处理
-                // - 更新订单状态为已支付
-                // - 发送确认邮件
-                // - 记录交易日志
-                // - 更新用户积分/会员等级
-                
-                console.log('支付验证成功:', { orderId, walletAddress, expectedAmount });
-                
             } else {
-                // 支付未检测到
-                alert('暂未检测到支付。请完成支付或稍后重试。');
-                
-                console.log('支付验证失败:', { orderId, walletAddress });
+                alert('暂未检测到支付，请稍后重试。');
             }
-            
-            // 重置按钮状态
-            checkPaymentBtn.textContent = '检查支付状态';
-            checkPaymentBtn.disabled = false;
-        }, 1500);
+        } catch (e) {
+            console.error('检查支付失败:', e);
+            alert('检查支付失败：' + (e?.message || '未知错误'));
+        }
+        checkPaymentBtn.textContent = '检查支付状态';
+        checkPaymentBtn.disabled = false;
     }
     
     /**

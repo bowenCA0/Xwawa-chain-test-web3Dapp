@@ -46,8 +46,9 @@
             </div>
         </section>
 
-        <div class="container">
-            <section class="about-intro">
+        <div class="about-content-wrapper">
+            <div class="container">
+                <section class="about-intro">
                 <div class="intro-content">
                     <div class="intro-text">
                         <h2 data-en="About Xwawa" data-zh="About Xwawa">About Xwawa</h2>
@@ -130,6 +131,7 @@
                     </div>
                 </div>
             </section>
+            </div>
         </div>
     </main>
 
@@ -177,8 +179,8 @@
                 enBtn.classList.remove('active');
             });
             
-            // 加载保存的语言偏好
-            const savedLanguage = localStorage.getItem('about-language') || localStorage.getItem('xwawa-language') || 'zh';
+            // 加载保存的语言偏好，默认为英语
+            const savedLanguage = localStorage.getItem('about-language') || localStorage.getItem('xwawa-language') || 'en';
             if (savedLanguage === 'en') {
                 enBtn.click();
             } else {
