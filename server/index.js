@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true); // 允许非浏览器或同源
-    const ok = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    const ok = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
     callback(ok ? null : new Error('Not allowed by CORS'), ok);
   },
   methods: ['GET', 'POST', 'OPTIONS'],
