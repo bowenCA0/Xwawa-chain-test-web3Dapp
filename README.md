@@ -303,24 +303,7 @@ async function executeWithRetry(query, params, maxRetries = 3) {
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
-## 联系我们
 
-- **项目主页**: https://xwawa.meme
-- **文档**: https://docs.xwawa.meme
-- **Twitter**: https://twitter.com/xwawa_official
-- **邮箱**: contact@xwawa.meme
-
-## 更新日志
-
-### v1.0.0 (2024-01-XX)
-- 初始版本发布
-- 抽奖系统基础功能
-- 市场交易功能
-- Web3钱包集成
-
----
-
-**注意**: 本项目仍在开发中，部分功能可能不完整。请在生产环境使用前进行充分测试。
 ## 后端服务（server）
 
 ### 技术栈与依赖
@@ -399,3 +382,21 @@ Invoke-WebRequest -Uri "http://localhost:3001/api/lottery/history?address=0x1111
 # SMTP 验证
 Invoke-WebRequest -Uri http://localhost:3001/api/mail/verify -UseBasicParsing
 ```
+## 联系我们
+
+- **项目主页**: https://xwawa.meme
+- **文档**: https://docs.xwawa.meme
+- **Twitter**: https://twitter.com/xwawa_official
+- **邮箱**: market@xwawa.meme,dev@email.xwawa.meme
+
+## 更新日志
+
+### v1.0.0 (2025-10-01)
+- 初始版本发布
+- 抽奖系统基础功能
+- 市场交易功能
+- Web3钱包集成
+
+---
+
+**注意**: 本项目仍在开发中，部分功能可能不完整。请在生产环境使用前进行充分测试。
