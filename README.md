@@ -49,21 +49,43 @@ Xwawa 是一个基于区块链技术的 Web3 抽奖与数字资产交易平台�
 
 ```
 Xwawa/
-├── index.html              # 主页
-├── lottery.html            # 抽奖页面
-├── marketplace.html        # 市场页面
-├── css/                    # 样式文件
-│   ├── style.css          # 通用样式
-│   ├── lottery.css        # 抽奖页面样式
-│   └── marketplace.css    # 市场页面样式
-├── js/                     # JavaScript文件
-│   ├── script.js          # 通用功能
-│   ├── lottery.js         # 抽奖功能
-│   ├── marketplace.js     # 市场功能
-│   └── web3-connector.js  # Web3连接器
-├── images/                 # 图片资源
-├── docs/                   # 项目文档
-└── README.md              # 项目说明
+├── .env.example
+├── .gitignore
+├── index.html
+├── lottery.html
+├── marketplace.html
+├── about.html
+├── css/
+│   ├── style.css
+│   ├── lottery.css
+│   ├── marketplace.css
+│   └── about.css
+├── js/
+│   ├── script.js
+│   ├── lottery.js
+│   ├── marketplace.js
+│   ├── web3-connector.js
+│   ├── web3modal-config.js
+│   ├── wallet-manager.js
+│   └── contract-config.js
+├── images/
+│   └── ...                # 图片资源（svg/png）
+├── server/
+│   ├── index.js           # Express API（健康检查、抽奖历史、领取/邮箱更新、邮件测试）
+│   ├── db.js              # MySQL2 连接池与健康检查、优雅关闭、无数据库模式
+│   ├── mailer.js          # SMTP 发信 + 可选 IMAP 追加到“已发送”
+│   └── verify-smtp.js     # SMTP 验证脚本（开发排查）
+├── docs/
+│   ├── API.md
+│   ├── DATABASE_CONNECTION.md
+│   ├── DEPLOYMENT.md
+│   └── SMART_CONTRACTS.md
+├── tools/
+│   └── mingit/            # 便携版 Git（用于在本环境完成推送）
+├── LICENSE
+├── README.md
+├── package.json
+└── package-lock.json
 ```
 
 ## 快速开始
@@ -299,3 +321,81 @@ async function executeWithRetry(query, params, maxRetries = 3) {
 ---
 
 **注意**: 本项目仍在开发中，部分功能可能不完整。请在生产环境使用前进行充分测试。
+## 后端服务（server）
+
+### 技术栈与依赖
+- Express + CORS + dotenv
+- MySQL2（`server/db.js`）
+- Nodemailer（SMTP 发信）+ 可选 ImapFlow（将原始邮件追加到“已发送”，`server/mailer.js`）
+
+### 启动与端口
+- 启动：`node server/index.js`
+- 端口：`PORT` 环境变量，未设置则默认 `3001`（<mcfile name="index.js" path="D:\Xwawa\server\index.js"></mcfile> 中 `const PORT = process.env.PORT || 3001;`）
+- 健康检查：`GET /api/health`
+- CORS：本地开发允许 `http/https` 的 `localhost` 与 `127.0.0.1` 任意端口访问（避免前端在 https 环境下被阻断）
+
+### 环境变量配置（.env）
+数据库（可选，未配置将进入“无数据库模式”）：
+```
+DB_HOST=
+DB_PORT=3306
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+```
+SMTP 发信（必需用于发奖确认或测试）：
+```
+SMTP_HOST=
+SMTP_PORT=587     # 465 走 SMTPS
+SMTP_USER=
+SMTP_PASS=
+SMTP_AUTH_METHOD= # 可选，如 LOGIN/PLAIN
+```
+IMAP（可选，用于把原始邮件追加到“已发送”）：
+```
+IMAP_HOST=
+IMAP_PORT=993
+IMAP_USER=        # 默认复用 SMTP_USER
+IMAP_PASS=        # 默认复用 SMTP_PASS
+IMAP_SECURE=true
+IMAP_SENT_FOLDER=Sent
+```
+
+### 数据库模块（server/db.js）
+- 软验证配置：缺失必需环境变量时记录告警并进入“无数据库模式”（接口将返回空数据而非报错）
+- 连接池：针对远程数据库优化的连接池参数（较小连接数、空闲超时、TCP Keep-Alive、连接/查询超时）
+- 健康检查：每 15 分钟 `ping` 连接并打印结果
+- 优雅关闭：进程收到退出信号时 `pool.end()` 释放资源
+- 表结构（`lottery_records`）关键字段：
+  - `id`, `wallet_address`, `prize`, `amount`, `tx_hash`, `status`
+  - `email`, `claim_status`, `claimed_at`
+  - `created_at`, `updated_at`
+
+### 邮件系统（server/mailer.js）
+- 基于 SMTP 的发信（支持 465/SMTPS 或 587/STARTTLS）
+- 构建统一的 HTML 模板并内嵌 `images/Email.png` 作为页头
+- 可选 IMAP：若配置了 IMAP，会尝试把原始邮件追加到“已发送”，失败时降级为自抄送备份
+- 常用开发端点：
+  - `GET /api/mail/verify`：验证 SMTP 登录
+  - `POST /api/mail/send-test`：发送测试邮件（不依赖数据库）
+
+### 后端 API 端点一览
+- 健康检查：`GET /api/health`
+- 数据库连通性与版本：`GET /api/db/ping`
+- 抽奖历史：`GET /api/lottery/history?address=0x...&limit=30`
+- 记录抽奖结果：`POST /api/lottery/draw`
+- 更新中奖邮箱（仅一二三等奖）：`POST /api/lottery/update-email`
+- 领取奖品（仅一二三等奖，防重复领取）：`POST /api/lottery/claim`
+
+### 开发/测试示例
+PowerShell（Windows）：
+```
+# 健康检查
+Invoke-WebRequest -Uri http://localhost:3001/api/health -UseBasicParsing
+
+# 抽奖历史
+Invoke-WebRequest -Uri "http://localhost:3001/api/lottery/history?address=0x1111111111111111111111111111111111111111&limit=10" -UseBasicParsing
+
+# SMTP 验证
+Invoke-WebRequest -Uri http://localhost:3001/api/mail/verify -UseBasicParsing
+```
